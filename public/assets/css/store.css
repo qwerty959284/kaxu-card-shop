@@ -1543,6 +1543,10 @@ section[id] {
   margin-top: 10px;
 }
 
+.pay-options.single {
+  grid-template-columns: 1fr;
+}
+
 .pay-option {
   position: relative;
   display: flex;

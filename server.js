@@ -235,10 +235,7 @@ async function handleApi(req, res, url) {
       ok: true,
       site: { name: config.site.name, domain: config.site.domain },
       products: listPublicProducts(),
-      payTypes: [
-        { id: 'alipay', label: '支付宝' },
-        { id: 'wxpay', label: '微信支付' },
-      ],
+      payTypes: [{ id: 'alipay', label: '支付宝' }],
     });
   }
 
