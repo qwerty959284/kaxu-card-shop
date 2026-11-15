@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>订单详情 · 卡序</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/store.css">
+</head>
+<body class="order-page">
+  <header class="order-header">
+    <div class="container nav">
+      <a class="brand" href="/" aria-label="卡序首页">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+            <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+            <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name"><strong>卡序</strong><span>KAXU.STORE</span></span>
+      </a>
+      <a class="nav-back" href="/">
+        <span data-icon="arrowLeft" data-size="14"></span>
+        <span>返回商店</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="order-wrap">
+    <div class="container">
+      <div class="order-grid">
+        <div class="order-card" id="orderContent" aria-live="polite">
+          <div style="padding:38px">
+            <div class="skeleton" style="width:110px;height:24px;border-radius:999px"></div>
+            <div class="skeleton" style="width:58%;height:34px;margin-top:24px"></div>
+            <div class="skeleton" style="width:80%;height:14px;margin-top:16px"></div>
+            <div class="skeleton" style="width:100%;height:90px;margin-top:36px;border-radius:14px"></div>
+          </div>
+        </div>
+
+        <aside class="order-aside">
+          <div class="aside-card">
+            <h4><span data-icon="shield" data-size="14"></span> 安全提醒</h4>
+            <ul>
+              <li>订单链接包含提货凭证，请勿转发给他人。</li>
+              <li>卡密仅在本订单页展示，建议支付后立即保存。</li>
+              <li>本站不会以任何理由索要你的支付密码。</li>
+            </ul>
+          </div>
+          <div class="aside-card order-support">
+            <strong>需要帮助？</strong>
+            <span>请提供订单号联系站点管理员，我们会核对支付与发货状态。请勿重复下单。</span>
+          </div>
+          <div class="aside-card">
+            <h4><span data-icon="wallet" data-size="14"></span> 支付说明</h4>
+            <p>支付由易彩豆在线支付提供，支持支付宝与微信。支付完成后请回到本页，系统会自动确认。</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-root"></div>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/order.js"></script>
+</body>
+</html>

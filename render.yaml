@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: kaxu-card-shop
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: EPAY_GATEWAY
+        value: https://pay.521cd.cn/xpay/epay
+      - key: EPAY_PID
+        value: "10169"
+      - key: EPAY_KEY
+        sync: false
+      - key: ADMIN_USER
+        value: ADMIN
+      - key: ADMIN_INITIAL_PASSWORD
+        sync: false
+    # 免费实例的文件系统是临时的，重新部署/重启会丢失订单和卡密。
+    # 正式营业请把 plan 改成 starter，并取消下面 disk 的注释：
+    # disk:
+    #   name: data
+    #   mountPath: /app/data
+    #   sizeGB: 1

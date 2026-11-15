@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>运营后台 · 卡序</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+</head>
+<body class="admin-body">
+
+  <!-- ======================== 登录 ======================== -->
+  <div class="login-view" id="loginView">
+    <section class="login-brand-panel">
+      <div class="login-brand-inner">
+        <a class="brand" href="/">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+              <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+              <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="brand-name"><strong>卡序</strong><span>KAXU.STORE</span></span>
+        </a>
+
+        <div class="login-copy">
+          <span class="eyebrow">Operations console</span>
+          <h1>把每一次交付，<br>变成<span class="grad-text">自动完成</span>。</h1>
+          <p>库存、订单、卡密与支付状态，一处掌握。前台卖出的每一张卡，后台都有迹可循。</p>
+        </div>
+
+        <div class="login-art" aria-hidden="true">
+          <div class="login-art-glow"></div>
+          <div class="mini-engine">
+            <div class="mini-engine-head">
+              <span><i></i> 自动发货引擎</span>
+              <b>RUNNING</b>
+            </div>
+            <div class="mini-order-row">
+              <span class="mini-ic">支</span>
+              <div><strong>支付宝订单已支付</strong><small>K20261115 · ¥19.80</small></div>
+              <span class="mini-ok">已发货</span>
+            </div>
+            <div class="mini-order-row">
+              <span class="mini-ic" style="background:#07c160">微</span>
+              <div><strong>微信支付已确认</strong><small>K20261115 · ¥88.00</small></div>
+              <span class="mini-ok">已发货</span>
+            </div>
+            <div class="mini-bars">
+              <span style="height:34%"></span><span style="height:56%"></span><span style="height:44%"></span><span style="height:72%"></span><span style="height:64%"></span><span style="height:88%"></span><span style="height:78%"></span><span style="height:100%"></span>
+            </div>
+          </div>
+          <div class="mini-chip chip-stock"><span data-icon="box" data-size="14"></span> 库存实时同步</div>
+          <div class="mini-chip chip-safe"><span data-icon="shield" data-size="14"></span> 回调自动补单</div>
+        </div>
+
+        <div class="login-points">
+          <span><span data-icon="check" data-size="13"></span> 卡密加密管理</span>
+          <span><span data-icon="check" data-size="13"></span> 支付状态可追溯</span>
+          <span><span data-icon="check" data-size="13"></span> 操作即时生效</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="login-form-panel">
+      <div class="login-card">
+        <div class="login-card-icon"><span data-icon="lock" data-size="22"></span></div>
+        <h2>管理员登录</h2>
+        <p class="login-sub">输入管理员账号，进入卡密运营后台。</p>
+
+        <form id="loginForm" novalidate>
+          <label class="field">
+            <span class="field-label">管理员账号</span>
+            <div class="input-with-icon">
+              <span data-icon="user" data-size="15"></span>
+              <input class="input" id="loginUser" name="username" type="text" autocomplete="username" placeholder="请输入管理员账号" required>
+            </div>
+          </label>
+          <label class="field" style="margin-top:16px">
+            <span class="field-label">登录密码</span>
+            <div class="input-with-icon">
+              <span data-icon="lock" data-size="15"></span>
+              <input class="input" id="loginPass" name="password" type="password" autocomplete="current-password" placeholder="请输入登录密码" required>
+              <button class="input-eye" type="button" id="togglePass" aria-label="显示密码"><span data-icon="eye" data-size="15"></span></button>
+            </div>
+          </label>
+
+          <div class="login-error" id="loginError" hidden><span data-icon="alert" data-size="14"></span><span id="loginErrorText"></span></div>
+
+          <button class="btn btn-primary btn-block login-submit" id="loginBtn" type="submit">
+            <span>进入后台</span>
+            <span data-icon="arrowRight" data-size="16"></span>
+          </button>
+        </form>
+
+        <div class="login-meta">
+          <a href="/"><span data-icon="arrowLeft" data-size="13"></span> 返回前台商店</a>
+          <span class="login-secure"><span data-icon="shield" data-size="12"></span> 受保护的后台</span>
+        </div>
+      </div>
+      <p class="login-footer">卡序 KAXU · 数字卡密运营系统</p>
+    </section>
+  </div>
+
+  <!-- ======================== 后台 ======================== -->
+  <div class="admin-shell" id="adminApp" hidden>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <a class="brand" href="/">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+              <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+              <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="brand-name"><strong>卡序</strong><span>CONTROL</span></span>
+        </a>
+        <span class="sidebar-env">ADMIN</span>
+      </div>
+
+      <nav class="side-nav" id="sideNav">
+        <p class="side-label">运营</p>
+        <a class="side-link" href="#/dashboard" data-view="dashboard">
+          <span data-icon="grid" data-size="17"></span><span>概览</span>
+        </a>
+        <a class="side-link" href="#/sales" data-view="sales">
+          <span data-icon="ticket" data-size="17"></span><span>卡密售出</span>
+          <b class="side-badge" id="navSalesBadge" hidden></b>
+        </a>
+
+        <p class="side-label">库存</p>
+        <a class="side-link" href="#/restock" data-view="restock">
+          <span data-icon="plusBox" data-size="17"></span><span>卡密补充</span>
+        </a>
+        <a class="side-link" href="#/cards" data-view="cards">
+          <span data-icon="key" data-size="17"></span><span>卡密管理</span>
+        </a>
+
+        <p class="side-label">商品</p>
+        <a class="side-link" href="#/create" data-view="create">
+          <span data-icon="tag" data-size="17"></span><span>卡密创建</span>
+        </a>
+      </nav>
+
+      <div class="side-stock" id="sideStock">
+        <div class="side-stock-head"><span>库存概览</span><span data-icon="box" data-size="13"></span></div>
+        <div class="side-stock-row"><strong id="sideStockNum">—</strong><span>张可用</span></div>
+        <div class="side-stock-bar"><i id="sideStockBar"></i></div>
+        <p id="sideStockHint">正在读取库存…</p>
+      </div>
+
+      <div class="side-user">
+        <span class="side-avatar" id="sideAvatar">A</span>
+        <div class="side-user-info">
+          <strong id="sideUsername">ADMIN</strong>
+          <span>超级管理员</span>
+        </div>
+        <button class="icon-btn" id="logoutBtn" type="button" title="退出登录" aria-label="退出登录">
+          <span data-icon="logout" data-size="16"></span>
+        </button>
+      </div>
+    </aside>
+
+    <div class="sidebar-mask" id="sidebarMask"></div>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <button class="icon-btn topbar-menu" id="sidebarToggle" type="button" aria-label="打开导航">
+            <span data-icon="menu" data-size="18"></span>
+          </button>
+          <div>
+            <h1 id="pageTitle">概览</h1>
+            <p id="pageSubtitle">今天的生意，一眼看清。</p>
+          </div>
+        </div>
+        <div class="topbar-right">
+          <span class="system-status"><i></i> 系统运行中</span>
+          <a class="btn btn-ghost btn-sm topbar-store" href="/" target="_blank" rel="noopener">
+            <span data-icon="external" data-size="14"></span>
+            <span class="topbar-store-text">前台商店</span>
+          </a>
+          <button class="icon-btn" id="refreshBtn" type="button" title="刷新当前页面" aria-label="刷新当前页面">
+            <span data-icon="refresh" data-size="16"></span>
+          </button>
+          <span class="topbar-avatar" id="topbarAvatar">A</span>
+        </div>
+      </header>
+
+      <div class="admin-content" id="adminContent"></div>
+    </main>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="toast-root"></div>
+
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+.git
+.github
+.gitignore
+.env
+.env.example
+data
+node_modules
+.shots
+*.log
+README.md
+DEPLOY.md
+render.yaml
+start.bat

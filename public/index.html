@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>卡序 KAXU · 数字卡密自动发货</title>
+  <meta name="description" content="精选影视、游戏、工具与阅读数字卡密，支持支付宝 / 微信支付，7×24 小时自动发货，付款后立即提取卡密。">
+  <meta name="theme-color" content="#06090d">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/store.css">
+</head>
+<body class="store-page">
+
+  <header class="site-header" id="siteHeader">
+    <div class="container nav">
+      <a class="brand" href="/" aria-label="卡序首页">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+            <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+            <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name">
+          <strong>卡序</strong>
+          <span>KAXU.STORE</span>
+        </span>
+      </a>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#products">全部卡密</a>
+        <a href="#how">购买流程</a>
+        <a href="#assurance">售后保障</a>
+        <a href="#faq">常见问题</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="admin-link" href="/admin" title="管理员登录">
+          <span data-icon="lock" data-size="14"></span>
+          <span class="admin-link-text">管理员登录</span>
+        </a>
+        <a class="btn btn-primary nav-buy" href="#products">立即选购</a>
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="打开菜单" aria-expanded="false">
+          <span data-icon="menu" data-size="18"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="hero-badge">
+            <span class="pulse" aria-hidden="true"></span>
+            支付宝 / 微信 · 7×24 自动发货
+          </div>
+          <h1>
+            <span class="hero-line">好卡不必等，</span>
+            <span class="hero-line grad-text">付款即自动发货。</span>
+          </h1>
+          <p class="hero-desc">
+            精选影视、游戏、工具与阅读权益卡密。支付完成后系统自动发放，无需人工值守，<strong>平均 8 秒到手</strong>。每一张卡密都可凭订单凭证随时找回。
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="#products">
+              浏览全部卡密
+              <span data-icon="arrowRight" data-size="17"></span>
+            </a>
+            <a class="btn btn-ghost btn-lg" href="#how">看看怎么买</a>
+          </div>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <strong id="statStock">—</strong>
+              <span>张卡密现货</span>
+            </div>
+            <div class="hero-stat">
+              <strong id="statProducts">—</strong>
+              <span>个在售商品</span>
+            </div>
+            <div class="hero-stat">
+              <strong>7×24</strong>
+              <span>自动发货</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+          <div class="visual-grid"></div>
+          <div class="visual-halo"></div>
+          <div class="visual-ring"></div>
+
+          <div class="receipt-card">
+            <div class="receipt-head">
+              <span class="receipt-status">
+                <i>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.2 4.2L19 7"/></svg>
+                </i>
+                支付成功
+              </span>
+              <span class="receipt-time">AUTO · 0.8s</span>
+            </div>
+            <div class="receipt-product">
+              <span class="receipt-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.7"/><path d="m10.3 8.8 5.1 3.2-5.1 3.2V8.8Z" fill="currentColor" stroke="none"/></svg>
+              </span>
+              <div>
+                <strong>云栖视频 VIP 月卡</strong>
+                <span>数量 × 2 · 自动发货</span>
+              </div>
+              <span class="receipt-price">¥19.80</span>
+            </div>
+            <div class="receipt-hr"></div>
+            <div class="receipt-label">
+              <span>卡密已发放</span>
+              <span>2 / 2</span>
+            </div>
+            <div class="key-line">
+              <code>YQ-7K4M-9F2Q-X8DA</code>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.2"/><path d="M15 9V6.2A2.2 2.2 0 0 0 12.8 4H6.2A2.2 2.2 0 0 0 4 6.2v6.6A2.2 2.2 0 0 0 6.2 15H9"/></svg>
+            </div>
+            <div class="key-line">
+              <code>YQ-3P8N-R6TX-2WQK</code>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2.2"/><path d="M15 9V6.2A2.2 2.2 0 0 0 12.8 4H6.2A2.2 2.2 0 0 0 4 6.2v6.6A2.2 2.2 0 0 0 6.2 15H9"/></svg>
+            </div>
+            <div class="receipt-foot">
+              <span>ORDER K20261115F3K2Q</span>
+              <b>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8 4.9 13h6.3l-.9 8.2L19.2 11h-6.3l.1-8.2Z"/></svg>
+                自动交付完成
+              </b>
+            </div>
+          </div>
+
+          <div class="float-chip chip-a">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 4.8 6v5.4c0 4.4 3 7.5 7.2 9.4 4.2-1.9 7.2-5 7.2-9.4V6L12 3.2Z"/><path d="m9.2 11.8 1.9 1.9 3.7-3.8"/></svg>
+            支付通道加密
+          </div>
+          <div class="float-chip chip-b">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8 4.9 13h6.3l-.9 8.2L19.2 11h-6.3l.1-8.2Z"/></svg>
+            库存实时锁定
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="trust-marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <div class="marquee-group">
+          <span class="marquee-item"><i></i>支付宝安全支付</span>
+          <span class="marquee-item"><i></i>微信支付</span>
+          <span class="marquee-item"><i></i>付款后自动发货</span>
+          <span class="marquee-item"><i></i>卡密加密存储</span>
+          <span class="marquee-item"><i></i>库存实时同步</span>
+          <span class="marquee-item"><i></i>支付回调自动补单</span>
+          <span class="marquee-item"><i></i>7×24 售后支持</span>
+          <span class="marquee-item"><i></i>订单凭证随时找回</span>
+        </div>
+        <div class="marquee-group">
+          <span class="marquee-item"><i></i>支付宝安全支付</span>
+          <span class="marquee-item"><i></i>微信支付</span>
+          <span class="marquee-item"><i></i>付款后自动发货</span>
+          <span class="marquee-item"><i></i>卡密加密存储</span>
+          <span class="marquee-item"><i></i>库存实时同步</span>
+          <span class="marquee-item"><i></i>支付回调自动补单</span>
+          <span class="marquee-item"><i></i>7×24 售后支持</span>
+          <span class="marquee-item"><i></i>订单凭证随时找回</span>
+        </div>
+      </div>
+    </div>
+
+    <section class="section products-section" id="products">
+      <div class="container">
+        <div class="products-head">
+          <div>
+            <span class="eyebrow">Instant delivery</span>
+            <h2 class="section-title">选一张，马上用。</h2>
+            <p class="section-desc">全部为现货卡密，下单支付后自动发放。库存数字实时更新，售完即止。</p>
+          </div>
+          <div class="filter-tabs" id="categoryTabs" role="tablist" aria-label="商品分类">
+            <button class="filter-tab active" type="button" data-category="全部" role="tab" aria-selected="true">全部</button>
+          </div>
+        </div>
+
+        <div class="product-grid" id="productGrid" aria-live="polite">
+          <div class="product-card skeleton-card"><div class="skeleton" style="width:50px;height:50px;border-radius:14px"></div><div class="skeleton" style="width:70%;height:20px;margin-top:24px"></div><div class="skeleton" style="width:100%;height:14px;margin-top:14px"></div><div class="skeleton" style="width:55%;height:26px;margin-top:44px"></div></div>
+          <div class="product-card skeleton-card"><div class="skeleton" style="width:50px;height:50px;border-radius:14px"></div><div class="skeleton" style="width:60%;height:20px;margin-top:24px"></div><div class="skeleton" style="width:100%;height:14px;margin-top:14px"></div><div class="skeleton" style="width:50%;height:26px;margin-top:44px"></div></div>
+          <div class="product-card skeleton-card"><div class="skeleton" style="width:50px;height:50px;border-radius:14px"></div><div class="skeleton" style="width:75%;height:20px;margin-top:24px"></div><div class="skeleton" style="width:100%;height:14px;margin-top:14px"></div><div class="skeleton" style="width:60%;height:26px;margin-top:44px"></div></div>
+        </div>
+
+        <p class="products-note">
+          <span data-icon="info" data-size="13"></span>
+          库存会在下单后锁定 30 分钟；未支付订单到期自动释放，卡密不会被重复售出。
+        </p>
+      </div>
+    </section>
+
+    <section class="section how-section" id="how">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">How it works</span>
+            <h2 class="section-title">三步，拿到你的卡。</h2>
+            <p class="section-desc">不需要注册账号，不需要等待人工。支付完成，卡密就在订单页。</p>
+          </div>
+          <a class="text-link" href="#products">去挑一张 <span data-icon="arrowUpRight" data-size="13" style="display:inline-block;vertical-align:-2px"></span></a>
+        </div>
+
+        <div class="steps-grid">
+          <article class="step-card reveal">
+            <div class="step-icon"><span data-icon="bag" data-size="18"></span></div>
+            <h3>选择商品与数量</h3>
+            <p>在商品卡片上查看实时库存与价格，选择数量后点击购买，填写联系方式（选填）。</p>
+            <span class="step-tag">01 / CHOOSE</span>
+          </article>
+          <article class="step-card reveal">
+            <div class="step-icon"><span data-icon="wallet" data-size="18"></span></div>
+            <h3>支付宝或微信付款</h3>
+            <p>跳转至易彩豆安全收银台，使用支付宝或微信完成支付，本站不保存你的支付账户信息。</p>
+            <span class="step-tag">02 / PAY</span>
+          </article>
+          <article class="step-card reveal">
+            <div class="step-icon"><span data-icon="zap" data-size="18"></span></div>
+            <h3>自动领取卡密</h3>
+            <p>支付回调确认后自动分配卡密，页面即时展示。记得保存订单链接，方便随时找回。</p>
+            <span class="step-tag">03 / RECEIVE</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section assurance-section" id="assurance">
+      <div class="container">
+        <div class="assurance-panel">
+          <div class="assurance-copy">
+            <span class="eyebrow">Built to deliver</span>
+            <h2>把麻烦留给我们，<br>你只管用卡。</h2>
+            <p>从库存锁定、支付回调到自动补单，每一个环节都为“付款后立刻拿到手”而设计。</p>
+            <div class="support-card">
+              <span class="support-avatar"><span data-icon="shield" data-size="19"></span></span>
+              <div>
+                <strong>订单遇到问题？</strong>
+                <span>凭订单号联系站点管理员，快速核对处理</span>
+              </div>
+              <span class="support-status"><span class="status-dot"></span>在线</span>
+            </div>
+          </div>
+
+          <div class="assurance-list">
+            <div class="assurance-item">
+              <span data-icon="refresh" data-size="19"></span>
+              <strong>支付回调自动补单</strong>
+              <span>回调丢失时主动查询支付平台，已付款订单不会漏发。</span>
+            </div>
+            <div class="assurance-item">
+              <span data-icon="lock" data-size="19"></span>
+              <strong>卡密加密存储</strong>
+              <span>卡密仅通过你的专属订单链接展示，不公开、不索引。</span>
+            </div>
+            <div class="assurance-item">
+              <span data-icon="box" data-size="19"></span>
+              <strong>库存实时锁定</strong>
+              <span>下单即锁卡，超时自动释放，避免同一张卡被重复售出。</span>
+            </div>
+            <div class="assurance-item">
+              <span data-icon="ticket" data-size="19"></span>
+              <strong>订单凭证找回</strong>
+              <span>订单页链接就是提货凭证，建议支付后立即收藏。</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container faq-grid">
+        <div class="faq-intro">
+          <span class="eyebrow">FAQ</span>
+          <h2>买之前，<br>你可能想知道。</h2>
+          <p>还有其他问题？请保留订单号，通过购买时填写的联系方式联系管理员。</p>
+        </div>
+
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>付款后多久能收到卡密？<span class="faq-icon" aria-hidden="true"></span></summary>
+            <div class="faq-answer">正常情况下支付成功后 3 - 10 秒内自动发放，页面会自动刷新状态。若支付平台回调延迟，订单页会自动向支付平台查询并补发。</div>
+          </details>
+          <details class="faq-item">
+            <summary>卡密在哪里查看？<span class="faq-icon" aria-hidden="true"></span></summary>
+            <div class="faq-answer">支付完成后会进入专属订单页，卡密直接展示在页面中，可一键复制。请保存该页面链接，它包含订单凭证，不要转发给他人。</div>
+          </details>
+          <details class="faq-item">
+            <summary>支付成功但没有收到卡密怎么办？<span class="faq-icon" aria-hidden="true"></span></summary>
+            <div class="faq-answer">先回到订单页点击“我已完成支付”触发主动查单；仍无结果时，请凭订单号联系管理员。后台支持手动同步支付状态与补单，不会让你白付。</div>
+          </details>
+          <details class="faq-item">
+            <summary>支持哪些支付方式？<span class="faq-icon" aria-hidden="true"></span></summary>
+            <div class="faq-answer">目前支持支付宝与微信支付，均由易彩豆在线支付提供收银通道。支付过程在支付平台完成，本站不接触你的支付账户信息。</div>
+          </details>
+          <details class="faq-item">
+            <summary>卡密可以退换吗？<span class="faq-icon" aria-hidden="true"></span></summary>
+            <div class="faq-answer">数字卡密一经发放即无法撤回，原则上不支持无理由退换。若卡密本身存在无效、重复等问题，请保留订单号与卡密截图联系管理员核实处理。</div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cta-section">
+      <div class="container">
+        <div class="cta-panel">
+          <div>
+            <h2>下一张卡，已经在库存里。</h2>
+            <p>实时现货 · 自动发货 · 支付宝 / 微信安全支付</p>
+          </div>
+          <a class="btn btn-primary btn-lg" href="#products">
+            立即选购
+            <span data-icon="arrowRight" data-size="17"></span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <a class="brand" href="/">
+            <span class="brand-mark">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+                <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+                <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="brand-name"><strong>卡序</strong><span>KAXU.STORE</span></span>
+          </a>
+          <p>数字权益卡密自动发货商店。所有商品均为虚拟数字内容，购买前请确认适用平台与有效期。</p>
+        </div>
+        <div class="footer-col">
+          <h4>商店</h4>
+          <a href="#products">全部卡密</a>
+          <a href="#how">购买流程</a>
+          <a href="#faq">常见问题</a>
+        </div>
+        <div class="footer-col">
+          <h4>保障</h4>
+          <a href="#assurance">售后说明</a>
+          <a href="#assurance">自动补单</a>
+          <a href="#faq">卡密无效处理</a>
+        </div>
+        <div class="footer-col">
+          <h4>支付与安全</h4>
+          <div class="footer-note">支付宝 / 微信支付由易彩豆在线支付提供。本站不存储支付账户信息，订单仅通过专属凭证访问。</div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2026 卡序 KAXU · 数字商品自动发货</span>
+        <span>虚拟商品，售出后不支持无理由退换</span>
+        <a class="footer-admin" href="/admin">
+          <span data-icon="lock" data-size="12"></span>
+          管理员入口
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 购买弹窗 -->
+  <div class="modal-backdrop" id="purchaseModal" hidden>
+    <div class="modal-card purchase-card" role="dialog" aria-modal="true" aria-labelledby="purchaseTitle">
+      <button class="modal-close" id="purchaseClose" type="button" aria-label="关闭">
+        <span data-icon="close" data-size="15"></span>
+      </button>
+
+      <div class="purchase-head">
+        <span class="purchase-icon" id="purchaseIcon"><span data-icon="card" data-size="22"></span></span>
+        <div>
+          <small id="purchaseCategory">DIGITAL CARD</small>
+          <h3 id="purchaseTitle">商品</h3>
+        </div>
+      </div>
+      <p class="purchase-desc" id="purchaseDesc"></p>
+      <div class="purchase-features" id="purchaseFeatures"></div>
+
+      <div class="purchase-divider"></div>
+
+      <div class="purchase-row">
+        <div class="purchase-row-label">
+          购买数量
+          <small id="purchaseStock">库存 — 张</small>
+        </div>
+        <div class="qty-stepper">
+          <button type="button" id="qtyMinus" aria-label="减少数量">
+            <span data-icon="minus" data-size="13"></span>
+          </button>
+          <span id="qtyValue">1</span>
+          <button type="button" id="qtyPlus" aria-label="增加数量">
+            <span data-icon="plus" data-size="13"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="purchase-row" style="display:block">
+        <label class="field">
+          <span class="field-label">联系方式 <small>选填，便于售后联系</small></span>
+          <input class="input" id="purchaseContact" type="text" maxlength="80" placeholder="QQ / 邮箱 / 手机号">
+        </label>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="field-label" style="margin-bottom:2px">
+          支付方式
+          <small>由易彩豆在线支付提供</small>
+        </div>
+        <div class="pay-options" id="payOptions">
+          <label class="pay-option is-checked" data-pay="alipay">
+            <input type="radio" name="payType" value="alipay" checked>
+            <span class="pay-logo alipay">支</span>
+            <span class="pay-option-text"><strong>支付宝</strong><span>推荐使用</span></span>
+            <span class="pay-check"><span data-icon="check" data-size="10"></span></span>
+          </label>
+          <label class="pay-option" data-pay="wxpay">
+            <input type="radio" name="payType" value="wxpay">
+            <span class="pay-logo wechat"><span data-icon="wechat" data-size="18"></span></span>
+            <span class="pay-option-text"><strong>微信支付</strong><span>扫码 / 跳转支付</span></span>
+            <span class="pay-check"><span data-icon="check" data-size="10"></span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="purchase-total">
+        <span>应付金额</span>
+        <strong><small>¥</small><span id="purchaseTotal">0.00</span></strong>
+      </div>
+
+      <div class="purchase-error" id="purchaseError" hidden>
+        <span data-icon="alert" data-size="13"></span>
+        <span id="purchaseErrorText"></span>
+      </div>
+
+      <button class="btn btn-primary btn-block purchase-submit" id="checkoutBtn" type="button">
+        <span id="checkoutLabel">使用支付宝支付</span>
+        <span data-icon="arrowRight" data-size="16"></span>
+      </button>
+      <p class="purchase-terms">点击支付即表示你已阅读并同意<a href="#faq">《购买须知》</a>。数字商品发货后不支持无理由退换。</p>
+    </div>
+  </div>
+
+  <div id="toast-root"></div>
+
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/store.js"></script>
+</body>
+</html>

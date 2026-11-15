@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Syntax check
+        run: |
+          for f in server.js src/*.js scripts/*.js public/assets/js/*.js; do
+            node --check "$f"
+          done
+
+      - name: Boot and smoke test
+        env:
+          PORT: "8788"
+          ADMIN_USER: ADMIN
+          ADMIN_INITIAL_PASSWORD: ci-test-password
+          EPAY_KEY: ci-test-key
+          PUBLIC_BASE_URL: http://127.0.0.1:8788
+        run: |
+          node server.js > server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8788/api/health > /tmp/health.json; then
+              break
+            fi
+            sleep 1
+          done
+          cat /tmp/health.json
+          curl -fsS http://127.0.0.1:8788/api/store > /tmp/store.json
+          node -e "const d=require('/tmp/store.json'); if(!d.ok || !d.products.length) process.exit(1); console.log('products:', d.products.length)"
+          curl -fsS http://127.0.0.1:8788/ > /dev/null
+          curl -fsS http://127.0.0.1:8788/admin > /dev/null
+
+      - name: Upload server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-log
+          path: server.log
+          if-no-files-found: ignore
