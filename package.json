@@ -10,6 +10,6 @@
     "reset-admin": "node scripts/reset-admin.js"
   },
   "engines": {
-    "node": ">=22.5"
+    "node": ">=22.13"
   }
 }

@@ -29,7 +29,7 @@ Render 会自动提供 `RENDER_EXTERNAL_URL`，本项目会把它作为支付回
 
 ## 本地运行
 
-要求：Node.js **22.5+**（使用内置 `node:sqlite`，没有 npm 依赖）。
+要求：Node.js **22.13+**（使用内置 `node:sqlite`，没有 npm 依赖）。
 
 ```powershell
 cd card-shop

@@ -196,7 +196,7 @@ node scripts/reset-admin.js ADMIN "新密码"
 
 - 没有填 `ADMIN_INITIAL_PASSWORD`，首次启动被项目主动拒绝
 - `EPAY_KEY` 为空（能启动，但支付不可用）
-- Node 版本低于 22.5
+- Node 版本低于 22.13
 
 ### 支付跳转后没有自动发货
 
