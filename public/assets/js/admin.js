@@ -1143,6 +1143,7 @@
                       <div class="row-actions">
                         <button class="row-btn" type="button" data-action="edit-product" data-id="${item.id}">${icon('edit', 12)} 编辑</button>
                         <button class="row-btn" type="button" data-action="restock-product" data-id="${item.id}">${icon('plus', 12)} 补货</button>
+                        <button class="row-btn danger" type="button" data-action="delete-product" data-id="${item.id}" title="有历史订单的商品只能下架">${icon('trash', 12)} 删除</button>
                       </div>
                     </td>
                   </tr>`,
@@ -1524,6 +1525,30 @@
       state.create.editingId = Number(target.dataset.id);
       location.hash = '#/create';
       if (state.currentView === 'create') navigate('create', true);
+      return;
+    }
+    if (action === 'delete-product') {
+      const id = Number(target.dataset.id);
+      const item = state.products.find((p) => p.id === id);
+      const ok = await confirmDialog({
+        title: '删除商品',
+        message: `将删除「${item ? item.name : '该商品'}」以及它的全部未售卡密，删除后不可恢复。有历史订单的商品不能删除，只能下架。`,
+        confirmText: '删除商品',
+      });
+      if (!ok) return;
+      try {
+        const result = await api(`/api/admin/products/${id}`, { method: 'DELETE' });
+        if (state.create.editingId === id) state.create.editingId = null;
+        toast(
+          result.deletedCards
+            ? `商品已删除，同时清理了 ${result.deletedCards} 张卡密`
+            : '商品已删除',
+        );
+        await loadCreate();
+        refreshSidebar();
+      } catch (err) {
+        toast(err.message || '删除失败', 'error');
+      }
       return;
     }
     if (action === 'cancel-edit') {

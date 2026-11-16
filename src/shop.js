@@ -671,6 +671,23 @@ export function setProductActive(id, active) {
   if (!result.changes) throw new AppError('商品不存在', 404, 'PRODUCT_NOT_FOUND');
 }
 
+export function deleteProduct(id) {
+  const product = db.prepare('SELECT id, name FROM products WHERE id = ?').get(Number(id));
+  if (!product) throw new AppError('商品不存在', 404, 'PRODUCT_NOT_FOUND');
+
+  const orderCount = db.prepare('SELECT COUNT(*) AS n FROM orders WHERE product_id = ?').get(product.id).n;
+  if (orderCount > 0) {
+    throw new AppError('该商品有历史订单，不能删除；请改为下架，保留订单记录', 409, 'PRODUCT_HAS_ORDERS');
+  }
+
+  return tx(() => {
+    const cardCount = db.prepare('SELECT COUNT(*) AS n FROM cards WHERE product_id = ?').get(product.id).n;
+    db.prepare('DELETE FROM cards WHERE product_id = ?').run(product.id);
+    db.prepare('DELETE FROM products WHERE id = ?').run(product.id);
+    return { deletedCards: cardCount };
+  });
+}
+
 export function insertCards(productId, lines, batch) {
   const clean = [];
   const seen = new Set();

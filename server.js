@@ -12,6 +12,7 @@ import {
   createProduct,
   dashboardData,
   deleteCards,
+  deleteProduct,
   exportCardsCsv,
   findOrderByNo,
   getClientOrder,
@@ -417,6 +418,11 @@ async function handleAdminApi(req, res, url, session) {
     const body = await readJson(req);
     const product = updateProduct(Number(productMatch[1]), normalizeProductPayload(body));
     return json(res, 200, { ok: true, product });
+  }
+
+  if (productMatch && req.method === 'DELETE') {
+    const result = deleteProduct(Number(productMatch[1]));
+    return json(res, 200, { ok: true, ...result });
   }
 
   const productActiveMatch = pathname.match(/^\/api\/admin\/products\/(\d+)\/active$/);
