@@ -8,6 +8,10 @@ APP_USER="kaxu"
 REPO_URL="https://github.com/qwerty959284/kaxu-card-shop.git"
 NODE_MAJOR="22"
 
+ADMIN_PASS="${ADMIN_PASS:-}"
+EPAY_KEY="${EPAY_KEY:-}"
+EPAY_PID="${EPAY_PID:-}"
+
 if [[ "${EUID}" -ne 0 ]]; then
   echo "请用 root 运行：sudo bash deploy-vps.sh"
   exit 1
@@ -47,21 +51,36 @@ else
 fi
 
 echo "== 5/6 配置管理员密码和支付密钥 =="
-read -rsp "后台管理员密码（至少 8 位，输入时不显示）: " ADMIN_PASS
+echo "提示：下面输入的内容会显示在屏幕上，这是为了方便确认输入；输完按回车。"
 echo
+
+if [[ -z "${ADMIN_PASS}" ]]; then
+  read -rp "后台管理员密码（至少 8 位）: " ADMIN_PASS || {
+    echo
+    echo "读取输入失败，请重新运行脚本。"
+    exit 1
+  }
+fi
 if [[ ${#ADMIN_PASS} -lt 8 ]]; then
   echo "密码至少 8 位，部署中止。"
   exit 1
 fi
 
-read -rsp "易彩豆商户密钥 EPAY_KEY（输入时不显示）: " EPAY_KEY
-echo
+if [[ -z "${EPAY_KEY}" ]]; then
+  read -rp "易彩豆商户密钥 EPAY_KEY: " EPAY_KEY || {
+    echo
+    echo "读取输入失败，请重新运行脚本。"
+    exit 1
+  }
+fi
 if [[ -z "${EPAY_KEY}" ]]; then
   echo "EPAY_KEY 不能为空，部署中止。"
   exit 1
 fi
 
-read -rp "易彩豆商户 PID [10169]: " EPAY_PID
+if [[ -z "${EPAY_PID}" ]]; then
+  read -rp "易彩豆商户 PID [10169]: " EPAY_PID || true
+fi
 EPAY_PID="${EPAY_PID:-10169}"
 
 IP="$(curl -4 -fsS --max-time 10 https://api.ipify.org 2>/dev/null || true)"
