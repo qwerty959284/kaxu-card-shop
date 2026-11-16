@@ -4,6 +4,47 @@
 
 ---
 
+## 附：Debian 12 VPS 一键部署
+
+如果你已经买了一台 Debian 12 VPS，可以不使用 Render，直接运行仓库里的脚本：
+
+```bash
+ssh root@你的服务器IP
+
+curl -fsSL https://raw.githubusercontent.com/qwerty959284/kaxu-card-shop/main/scripts/deploy-vps.sh -o deploy-vps.sh
+sudo bash deploy-vps.sh
+```
+
+脚本会自动：
+
+- 安装 Node.js 22 和 Caddy
+- 拉取 GitHub 仓库到 `/opt/kaxu-card-shop`
+- 提示你输入后台密码和易彩豆密钥
+- 用 systemd 守护进程，服务器重启后自动恢复
+- 用 `你的IP.sslip.io` 免费域名自动申请 HTTPS 证书
+- 数据保存在 `/opt/kaxu-card-shop/data/shop.db`，不会因重启丢失
+
+部署完成后会输出前台、后台和回调地址。
+
+需要放行防火墙/商家面板的 **80、443** 端口；如果 HTTPS 证书签发失败，先检查这两个端口。
+
+常用命令：
+
+```bash
+systemctl status kaxu
+systemctl restart kaxu
+journalctl -u kaxu -n 80 --no-pager
+journalctl -u caddy -n 80 --no-pager
+```
+
+备份数据库：
+
+```bash
+cp /opt/kaxu-card-shop/data/shop.db /root/shop-backup-$(date +%F).db
+```
+
+---
+
 ## 0. 先理解：为什么不用 GitHub Pages
 
 GitHub Pages 只托管**静态文件**（HTML/CSS/JS）。本项目还需要：
