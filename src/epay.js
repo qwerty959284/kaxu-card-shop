@@ -4,6 +4,7 @@ import { centsToMoney } from './util.js';
 
 export const PAY_TYPES = {
   alipay: { label: '支付宝', color: '#1677ff' },
+  wxpay: { label: '微信支付', color: '#07c160' },
 };
 
 /**
@@ -32,8 +33,8 @@ export function verifySign(params) {
   }
 }
 
-export function buildPayment(order, { baseUrl, ip, device = 'pc' }) {
-  const type = 'alipay';
+export function buildPayment(order, { baseUrl, payType, ip, device = 'pc' }) {
+  const type = payType === 'wxpay' ? 'wxpay' : 'alipay';
   const params = {
     pid: config.epay.pid,
     type,
@@ -118,6 +119,6 @@ export async function queryRemoteOrder(outTradeNo) {
   return data;
 }
 
-export function parsePayType() {
-  return 'alipay';
+export function parsePayType(value) {
+  return value === 'wxpay' ? 'wxpay' : 'alipay';
 }

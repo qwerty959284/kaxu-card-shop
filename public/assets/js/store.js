@@ -7,6 +7,7 @@
     category: '全部',
     current: null,
     qty: 1,
+    payType: 'alipay',
     submitting: false,
   };
 
@@ -132,6 +133,16 @@
     el.total.textContent = ((state.current.priceCents * state.qty) / 100).toFixed(2);
   };
 
+  const selectPay = (type) => {
+    state.payType = type === 'wxpay' ? 'wxpay' : 'alipay';
+    $$('.pay-option').forEach((option) => {
+      option.classList.toggle('is-checked', option.dataset.pay === state.payType);
+    });
+    resetCheckoutLabel(
+      state.payType === 'wxpay' ? '使用微信支付' : '使用支付宝支付',
+    );
+  };
+
   const resetCheckoutLabel = (label) => {
     el.submit.innerHTML = `<span id="checkoutLabel">${label}</span>${icon('arrowRight', 16)}`;
     el.submitLabel = $('#checkoutLabel');
@@ -165,6 +176,7 @@
     el.modal.hidden = false;
     document.body.classList.add('no-scroll');
     updateQty();
+    selectPay('alipay');
     setTimeout(() => el.close.focus(), 50);
   };
 
@@ -193,16 +205,16 @@
           productId: state.current.id,
           quantity: state.qty,
           contact: el.contact.value.trim(),
-          payType: 'alipay',
+          payType: state.payType,
         },
       });
-      const target = `${data.payUrl}&type=alipay`;
+      const target = `${data.payUrl}&type=${state.payType}`;
       el.submit.innerHTML = `<span class="spinner spinner-dark"></span><span>正在前往支付…</span>`;
       window.location.assign(target);
     } catch (err) {
       state.submitting = false;
       el.submit.disabled = false;
-      resetCheckoutLabel('使用支付宝支付');
+      resetCheckoutLabel(state.payType === 'wxpay' ? '使用微信支付' : '使用支付宝支付');
       showError(err.message || '创建订单失败，请稍后重试');
       if (/库存/.test(err.message)) {
         loadStore(true);
@@ -311,6 +323,9 @@
         state.qty += 1;
         updateQty();
       }
+    });
+    $$('.pay-option').forEach((option) => {
+      option.addEventListener('click', () => selectPay(option.dataset.pay));
     });
     el.submit.addEventListener('click', checkout);
   };

@@ -13,7 +13,7 @@
   let syncing = false;
   let stopped = false;
 
-  const payLabel = () => '支付宝';
+  const payLabel = (type) => (type === 'wxpay' ? '微信支付' : '支付宝');
 
   const statusMeta = (status) => {
     switch (status) {

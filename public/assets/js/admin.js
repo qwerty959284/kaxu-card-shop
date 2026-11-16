@@ -83,9 +83,11 @@
   const statusPill = (status) =>
     `<span class="status-pill status-${esc(status)}"><i></i>${statusLabels[status] || esc(status)}</span>`;
 
-  const payLabel = () => '支付宝';
-  const payDot = () =>
-    `<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:#1677ff;margin-right:5px;vertical-align:1px"></span>`;
+  const payLabel = (type) => (type === 'wxpay' ? '微信' : '支付宝');
+  const payDot = (type) =>
+    `<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${
+      type === 'wxpay' ? '#07c160' : '#1677ff'
+    };margin-right:5px;vertical-align:1px"></span>`;
 
   const viewLoading = () => {
     content.innerHTML = `<div class="admin-loading"><span class="spinner"></span><span>正在加载…</span></div>`;

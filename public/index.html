@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>卡序 KAXU · 数字卡密自动发货</title>
-  <meta name="description" content="精选影视、游戏、工具与阅读数字卡密，支持支付宝安全支付，7×24 小时自动发货，付款后立即提取卡密。">
+  <meta name="description" content="精选影视、游戏、工具与阅读数字卡密，支持支付宝 / 微信支付，7×24 小时自动发货，付款后立即提取卡密。">
   <meta name="theme-color" content="#06090d">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/assets/css/base.css">
@@ -54,7 +54,7 @@
         <div class="hero-copy">
           <div class="hero-badge">
             <span class="pulse" aria-hidden="true"></span>
-            支付宝 · 7×24 自动发货
+            支付宝 / 微信 · 7×24 自动发货
           </div>
           <h1>
             <span class="hero-line">好卡不必等，</span>
@@ -149,6 +149,7 @@
       <div class="marquee-track">
         <div class="marquee-group">
           <span class="marquee-item"><i></i>支付宝安全支付</span>
+          <span class="marquee-item"><i></i>微信支付</span>
           <span class="marquee-item"><i></i>付款后自动发货</span>
           <span class="marquee-item"><i></i>卡密加密存储</span>
           <span class="marquee-item"><i></i>库存实时同步</span>
@@ -158,6 +159,7 @@
         </div>
         <div class="marquee-group">
           <span class="marquee-item"><i></i>支付宝安全支付</span>
+          <span class="marquee-item"><i></i>微信支付</span>
           <span class="marquee-item"><i></i>付款后自动发货</span>
           <span class="marquee-item"><i></i>卡密加密存储</span>
           <span class="marquee-item"><i></i>库存实时同步</span>
@@ -214,8 +216,8 @@
           </article>
           <article class="step-card reveal">
             <div class="step-icon"><span data-icon="wallet" data-size="18"></span></div>
-            <h3>支付宝付款</h3>
-            <p>跳转至易彩豆安全收银台，使用支付宝完成支付，本站不保存你的支付账户信息。</p>
+            <h3>支付宝或微信付款</h3>
+            <p>跳转至易彩豆安全收银台，使用支付宝或微信完成支付，本站不保存你的支付账户信息。</p>
             <span class="step-tag">02 / PAY</span>
           </article>
           <article class="step-card reveal">
@@ -294,7 +296,7 @@
           </details>
           <details class="faq-item">
             <summary>支持哪些支付方式？<span class="faq-icon" aria-hidden="true"></span></summary>
-            <div class="faq-answer">目前支持支付宝，由易彩豆在线支付提供收银通道。支付过程在支付平台完成，本站不接触你的支付账户信息。</div>
+            <div class="faq-answer">目前支持支付宝与微信支付，均由易彩豆在线支付提供收银通道。支付过程在支付平台完成，本站不接触你的支付账户信息。</div>
           </details>
           <details class="faq-item">
             <summary>卡密可以退换吗？<span class="faq-icon" aria-hidden="true"></span></summary>
@@ -309,7 +311,7 @@
         <div class="cta-panel">
           <div>
             <h2>下一张卡，已经在库存里。</h2>
-            <p>实时现货 · 自动发货 · 支付宝安全支付</p>
+            <p>实时现货 · 自动发货 · 支付宝 / 微信安全支付</p>
           </div>
           <a class="btn btn-primary btn-lg" href="#products">
             立即选购
@@ -350,7 +352,7 @@
         </div>
         <div class="footer-col">
           <h4>支付与安全</h4>
-          <div class="footer-note">支付宝支付由易彩豆在线支付提供。本站不存储支付账户信息，订单仅通过专属凭证访问。</div>
+          <div class="footer-note">支付宝 / 微信支付由易彩豆在线支付提供。本站不存储支付账户信息，订单仅通过专属凭证访问。</div>
         </div>
       </div>
       <div class="footer-bottom">
@@ -411,11 +413,17 @@
           支付方式
           <small>由易彩豆在线支付提供</small>
         </div>
-        <div class="pay-options single" id="payOptions">
+        <div class="pay-options" id="payOptions">
           <label class="pay-option is-checked" data-pay="alipay">
             <input type="radio" name="payType" value="alipay" checked>
             <span class="pay-logo alipay">支</span>
-            <span class="pay-option-text"><strong>支付宝</strong><span>推荐使用 · 安全支付</span></span>
+            <span class="pay-option-text"><strong>支付宝</strong><span>推荐使用</span></span>
+            <span class="pay-check"><span data-icon="check" data-size="10"></span></span>
+          </label>
+          <label class="pay-option" data-pay="wxpay">
+            <input type="radio" name="payType" value="wxpay">
+            <span class="pay-logo wechat"><span data-icon="wechat" data-size="18"></span></span>
+            <span class="pay-option-text"><strong>微信支付</strong><span>扫码 / 跳转支付</span></span>
             <span class="pay-check"><span data-icon="check" data-size="10"></span></span>
           </label>
         </div>

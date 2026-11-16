@@ -1,6 +1,6 @@
 import { db, tx } from './db.js';
 import { config } from './config.js';
-import { queryRemoteOrder, verifySign } from './epay.js';
+import { queryRemoteOrder, verifySign, PAY_TYPES } from './epay.js';
 import {
   addMinutes,
   centsToMoney,
@@ -130,7 +130,7 @@ export function createOrder({ productId, quantity, contact, payType, ip }) {
   const createdAt = nowIso();
   const expiresAt = addMinutes(createdAt, config.orderTtlMinutes);
   const accessToken = randomToken(24);
-  const type = 'alipay';
+  const type = PAY_TYPES[payType] ? payType : 'alipay';
 
   return tx(() => {
     const cards = db
