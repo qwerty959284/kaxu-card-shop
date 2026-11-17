@@ -61,6 +61,7 @@ node scripts/reset-admin.js ADMIN "你的新密码"
 | `PUBLIC_BASE_URL` | 否 | 对外访问地址，如 `https://shop.example.com`；Render 会自动使用 `RENDER_EXTERNAL_URL` |
 | `ADMIN_USER` | 否 | 管理员账号，默认 `ADMIN` |
 | `ADMIN_INITIAL_PASSWORD` | 首次启动必填 | 管理员初始密码，至少 8 位 |
+| `PAYMENT_METHODS` | 否 | 前台启用的支付方式，默认 `alipay,wxpay`；微信不稳定时设为 `alipay` |
 | `EPAY_GATEWAY` | 否 | 易彩豆网关，默认 `https://pay.521cd.cn/xpay/epay` |
 | `EPAY_PID` | 是 | 易彩豆商户 ID |
 | `EPAY_KEY` | 是 | 易彩豆商户密钥，**不要提交到 Git** |

@@ -34,6 +34,10 @@ const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN
   ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
   : '';
 const autoBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || railwayDomain;
+const paymentMethods = (process.env.PAYMENT_METHODS || 'alipay,wxpay')
+  .split(',')
+  .map((method) => method.trim().toLowerCase())
+  .filter((method) => method === 'alipay' || method === 'wxpay');
 
 export const config = {
   root: ROOT,
@@ -46,6 +50,7 @@ export const config = {
   isProduction: process.env.NODE_ENV === 'production',
   sessionHours: number(process.env.SESSION_HOURS, 12),
   orderTtlMinutes: number(process.env.ORDER_TTL_MINUTES, 30),
+  paymentMethods: paymentMethods.length ? paymentMethods : ['alipay'],
   admin: {
     username: process.env.ADMIN_USER || 'ADMIN',
     initialPassword: process.env.ADMIN_INITIAL_PASSWORD || '',

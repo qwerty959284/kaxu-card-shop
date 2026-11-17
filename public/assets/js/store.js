@@ -8,6 +8,7 @@
     current: null,
     qty: 1,
     payType: 'alipay',
+    payMethods: ['alipay', 'wxpay'],
     submitting: false,
   };
 
@@ -134,13 +135,26 @@
   };
 
   const selectPay = (type) => {
-    state.payType = type === 'wxpay' ? 'wxpay' : 'alipay';
+    state.payType = state.payMethods.includes(type) ? type : state.payMethods[0] || 'alipay';
     $$('.pay-option').forEach((option) => {
       option.classList.toggle('is-checked', option.dataset.pay === state.payType);
     });
     resetCheckoutLabel(
       state.payType === 'wxpay' ? '使用微信支付' : '使用支付宝支付',
     );
+  };
+
+  const applyPayMethods = (types) => {
+    const ids = (types || [])
+      .map((item) => (typeof item === 'string' ? item : item.id))
+      .filter((id) => id === 'alipay' || id === 'wxpay');
+    state.payMethods = ids.length ? ids : ['alipay'];
+    $$('.pay-option').forEach((option) => {
+      option.hidden = !state.payMethods.includes(option.dataset.pay);
+    });
+    const box = $('#payOptions');
+    if (box) box.classList.toggle('single', state.payMethods.length <= 1);
+    selectPay(state.payMethods[0]);
   };
 
   const resetCheckoutLabel = (label) => {
@@ -176,7 +190,7 @@
     el.modal.hidden = false;
     document.body.classList.add('no-scroll');
     updateQty();
-    selectPay('alipay');
+    selectPay(state.payMethods[0] || 'alipay');
     setTimeout(() => el.close.focus(), 50);
   };
 
@@ -226,6 +240,7 @@
     try {
       const data = await api('/api/store');
       state.products = data.products || [];
+      applyPayMethods(data.payTypes);
       const stock = state.products.reduce((sum, p) => sum + p.stock, 0);
       $('#statStock').textContent = stock.toLocaleString('zh-CN');
       $('#statProducts').textContent = state.products.length;
