@@ -93,6 +93,11 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  );
+
   CREATE INDEX IF NOT EXISTS idx_cards_product_status ON cards(product_id, status, id);
   CREATE INDEX IF NOT EXISTS idx_cards_order ON cards(order_id);
   CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at);
@@ -220,6 +225,14 @@ export function seedDatabase() {
       config.admin.username,
       hashPassword(config.admin.initialPassword),
       nowIso(),
+    );
+  }
+
+  const settingsCount = db.prepare('SELECT COUNT(*) AS n FROM settings WHERE key = ?').get('payment_methods').n;
+  if (settingsCount === 0) {
+    db.prepare('INSERT INTO settings (key, value) VALUES (?, ?)').run(
+      'payment_methods',
+      JSON.stringify(config.paymentMethods),
     );
   }
 

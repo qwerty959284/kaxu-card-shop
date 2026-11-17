@@ -734,6 +734,134 @@ body.admin-body {
   display: none;
 }
 
+/* ============================== 通道控制 ============================== */
+
+.channels-view {
+  max-width: 1100px;
+}
+
+.channels-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+.channel-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.channel-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: opacity 0.2s, border-color 0.2s;
+}
+
+.channel-card.is-off {
+  opacity: 0.5;
+}
+
+.channel-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.channel-icon.alipay {
+  background: #1677ff;
+}
+
+.channel-icon.wechat {
+  background: #07c160;
+}
+
+.channel-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-info strong {
+  display: block;
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.channel-info span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-2);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.channel-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 20px 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 197, 110, 0.17);
+  border-radius: 9px;
+  background: rgba(255, 197, 110, 0.04);
+  color: var(--amber);
+  font-size: 9.5px;
+  line-height: 1.6;
+}
+
+.channel-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.channels-view .form-actions {
+  margin-top: 0;
+  padding: 16px 20px 20px;
+  border-top: 0;
+}
+
+.channel-help {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.channel-help li {
+  position: relative;
+  padding-left: 13px;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.7;
+}
+
+.channel-help li::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 0;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(111, 242, 191, 0.45);
+}
+
 /* ============================== 仪表盘 ============================== */
 
 .banner {
@@ -2272,6 +2400,10 @@ body.admin-body {
 
 @media (max-width: 860px) {
   .login-view {
+    grid-template-columns: 1fr;
+  }
+
+  .channels-grid {
     grid-template-columns: 1fr;
   }
 

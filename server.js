@@ -16,6 +16,7 @@ import {
   exportCardsCsv,
   findOrderByNo,
   getClientOrder,
+  getPaymentMethods,
   handleNotify,
   listAdminOrders,
   listBatches,
@@ -27,6 +28,7 @@ import {
   restockProduct,
   resyncAdminOrder,
   serializeClientOrder,
+  setPaymentMethods,
   setProductActive,
   syncOrderWithProvider,
   updateProduct,
@@ -232,14 +234,16 @@ async function handleApi(req, res, url) {
   }
 
   if (pathname === '/api/store' && req.method === 'GET') {
+    const methods = getPaymentMethods();
     return json(res, 200, {
       ok: true,
       site: { name: config.site.name, domain: config.site.domain },
       products: listPublicProducts(),
-      payTypes: config.paymentMethods.map((id) => ({
+      payTypes: methods.map((id) => ({
         id,
         label: id === 'wxpay' ? '微信支付' : '支付宝',
       })),
+      salesPaused: methods.length === 0,
     });
   }
 
@@ -401,6 +405,32 @@ async function handleAdminApi(req, res, url, session) {
     }
     const order = closeOrder(id);
     return json(res, 200, { ok: true, order: adminOrderPayload(order) });
+  }
+
+  if (pathname === '/api/admin/payment-methods' && req.method === 'GET') {
+    const methods = getPaymentMethods();
+    return json(res, 200, {
+      ok: true,
+      methods,
+      alipay: methods.includes('alipay'),
+      wxpay: methods.includes('wxpay'),
+      salesPaused: methods.length === 0,
+    });
+  }
+
+  if (pathname === '/api/admin/payment-methods' && req.method === 'POST') {
+    const body = await readJson(req);
+    const methods = Array.isArray(body.methods)
+      ? body.methods
+      : [body.alipay ? 'alipay' : null, body.wxpay ? 'wxpay' : null].filter(Boolean);
+    const saved = setPaymentMethods(methods);
+    return json(res, 200, {
+      ok: true,
+      methods: saved,
+      alipay: saved.includes('alipay'),
+      wxpay: saved.includes('wxpay'),
+      salesPaused: saved.length === 0,
+    });
   }
 
   if (pathname === '/api/admin/products' && req.method === 'GET') {

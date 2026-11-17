@@ -20,6 +20,29 @@ export class AppError extends Error {
   }
 }
 
+const PAY_METHODS = new Set(['alipay', 'wxpay']);
+
+export function getPaymentMethods() {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'payment_methods'").get();
+  if (!row) return [...config.paymentMethods];
+  try {
+    const parsed = JSON.parse(row.value);
+    if (!Array.isArray(parsed)) return [...config.paymentMethods];
+    return [...new Set(parsed.filter((method) => PAY_METHODS.has(method)))];
+  } catch {
+    return [...config.paymentMethods];
+  }
+}
+
+export function setPaymentMethods(methods) {
+  const clean = [...new Set((Array.isArray(methods) ? methods : []).filter((method) => PAY_METHODS.has(method)))];
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES ('payment_methods', ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run(JSON.stringify(clean));
+  return clean;
+}
+
 const ICONS = new Set(['card', 'play', 'game', 'bolt', 'book', 'music', 'cloud', 'star', 'gift']);
 const ACCENTS = new Set(['mint', 'violet', 'amber', 'blue', 'rose', 'cyan']);
 
@@ -130,7 +153,9 @@ export function createOrder({ productId, quantity, contact, payType, ip }) {
   const createdAt = nowIso();
   const expiresAt = addMinutes(createdAt, config.orderTtlMinutes);
   const accessToken = randomToken(24);
-  const type = config.paymentMethods.includes(payType) ? payType : config.paymentMethods[0];
+  const methods = getPaymentMethods();
+  if (!methods.length) throw new AppError('商店暂停销售，请稍后再试', 503, 'SALES_PAUSED');
+  const type = methods.includes(payType) ? payType : methods[0];
 
   return tx(() => {
     const cards = db

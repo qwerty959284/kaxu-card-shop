@@ -47,6 +47,11 @@
       subtitle: '上架新商品，或调整已有商品。',
       load: loadCreate,
     },
+    channels: {
+      title: '通道控制',
+      subtitle: '随时开关支付宝 / 微信支付通道。',
+      load: loadChannels,
+    },
   };
 
   const state = {
@@ -66,6 +71,7 @@
     },
     restock: { productId: null },
     create: { editingId: null, icon: 'card', accent: 'mint' },
+    channels: { alipay: true, wxpay: true },
     searchTimer: null,
     currentView: 'dashboard',
   };
@@ -291,6 +297,121 @@
     badge.hidden = count <= 0;
     badge.textContent = count > 99 ? '99+' : String(count);
   };
+
+  /* ============================== 通道控制 ============================== */
+
+  async function loadChannels() {
+    const data = await api('/api/admin/payment-methods');
+    state.channels = { alipay: data.alipay, wxpay: data.wxpay };
+    const labels = [data.alipay ? '支付宝' : '', data.wxpay ? '微信' : ''].filter(Boolean);
+    const summary = labels.length ? labels.join(' + ') : '暂停销售';
+    const summaryClass = labels.length ? 'tag tag-mint' : 'tag';
+
+    content.innerHTML = `
+      <div class="view-enter channels-view">
+        <div class="channels-grid">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">${icon('wallet', 15)} 前台支付通道</div>
+                <div class="panel-sub">关闭后前台立即隐藏对应支付方式，不需要重启服务</div>
+              </div>
+              <span class="${summaryClass}" id="channelSummary">${summary}</span>
+            </div>
+            <div class="channel-list">
+              <div class="channel-card ${data.alipay ? '' : 'is-off'}" id="alipayCard">
+                <span class="channel-icon alipay">支</span>
+                <div class="channel-info">
+                  <strong>支付宝通道</strong>
+                  <span>${data.alipay ? '当前前台可用' : '当前已关闭，前台不显示支付宝'}</span>
+                </div>
+                <label class="switch" title="开启 / 关闭支付宝">
+                  <input type="checkbox" id="channelAlipay" ${data.alipay ? 'checked' : ''}>
+                  <i></i>
+                </label>
+              </div>
+
+              <div class="channel-card ${data.wxpay ? '' : 'is-off'}" id="wxpayCard">
+                <span class="channel-icon wechat">微</span>
+                <div class="channel-info">
+                  <strong>微信支付通道</strong>
+                  <span>${data.wxpay ? '当前前台可用；账号被风控时建议关闭' : '当前已关闭，前台不显示微信'}</span>
+                </div>
+                <label class="switch" title="开启 / 关闭微信">
+                  <input type="checkbox" id="channelWxpay" ${data.wxpay ? 'checked' : ''}>
+                  <i></i>
+                </label>
+              </div>
+            </div>
+
+            <div class="channel-note">
+              ${icon('alert', 14)}
+              <span>两个通道都关闭后，前台会进入“暂停销售”状态，客户无法下单。修改后点下方保存。</span>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-primary btn-sm" type="button" id="saveChannels">
+                ${icon('check', 14)} 保存通道设置
+              </button>
+            </div>
+          </section>
+
+          <aside class="panel">
+            <div class="panel-head">
+              <div><div class="panel-title">${icon('info', 15)} 使用说明</div></div>
+            </div>
+            <div class="panel-body">
+              <ul class="channel-help">
+                <li>支付通道掉线时，先关闭对应通道，避免客户付款失败。</li>
+                <li>微信账号被风控/频繁离线时，建议只保留支付宝。</li>
+                <li>通道开关立即生效，不影响已经创建的订单。</li>
+                <li>重新开启后，前台会自动恢复对应支付方式。</li>
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>`;
+
+    hydrateIcons(content);
+
+    const alipay = $('#channelAlipay');
+    const wxpay = $('#channelWxpay');
+    const syncCards = () => {
+      $('#alipayCard')?.classList.toggle('is-off', !alipay.checked);
+      $('#wxpayCard')?.classList.toggle('is-off', !wxpay.checked);
+    };
+    alipay.addEventListener('change', syncCards);
+    wxpay.addEventListener('change', syncCards);
+
+    $('#saveChannels').addEventListener('click', async () => {
+      const nextAlipay = alipay.checked;
+      const nextWxpay = wxpay.checked;
+      if (!nextAlipay && !nextWxpay) {
+        const ok = await confirmDialog({
+          title: '暂停销售',
+          message: '支付宝和微信都关闭后，前台会暂停销售，客户将无法下单。确定全部关闭吗？',
+          confirmText: '全部关闭',
+        });
+        if (!ok) return;
+      }
+
+      const btn = $('#saveChannels');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="width:13px;height:13px"></span> 正在保存…`;
+      try {
+        await api('/api/admin/payment-methods', {
+          method: 'POST',
+          body: { alipay: nextAlipay, wxpay: nextWxpay },
+        });
+        toast(nextAlipay || nextWxpay ? '支付通道已更新' : '已暂停销售');
+        await loadChannels();
+      } catch (err) {
+        toast(err.message || '保存失败', 'error');
+        btn.disabled = false;
+        btn.innerHTML = `${icon('check', 14)} 保存通道设置`;
+      }
+    });
+  }
 
   /* ============================== 概览 ============================== */
 

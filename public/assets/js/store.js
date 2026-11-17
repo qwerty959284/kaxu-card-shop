@@ -9,6 +9,7 @@
     qty: 1,
     payType: 'alipay',
     payMethods: ['alipay', 'wxpay'],
+    salesPaused: false,
     submitting: false,
   };
 
@@ -135,7 +136,14 @@
   };
 
   const selectPay = (type) => {
-    state.payType = state.payMethods.includes(type) ? type : state.payMethods[0] || 'alipay';
+    if (!state.payMethods.length) {
+      state.payType = null;
+      el.submit.disabled = true;
+      resetCheckoutLabel('暂停销售');
+      return;
+    }
+    el.submit.disabled = false;
+    state.payType = state.payMethods.includes(type) ? type : state.payMethods[0];
     $$('.pay-option').forEach((option) => {
       option.classList.toggle('is-checked', option.dataset.pay === state.payType);
     });
@@ -148,7 +156,8 @@
     const ids = (types || [])
       .map((item) => (typeof item === 'string' ? item : item.id))
       .filter((id) => id === 'alipay' || id === 'wxpay');
-    state.payMethods = ids.length ? ids : ['alipay'];
+    state.payMethods = ids;
+    state.salesPaused = ids.length === 0;
     $$('.pay-option').forEach((option) => {
       option.hidden = !state.payMethods.includes(option.dataset.pay);
     });
@@ -163,6 +172,10 @@
   };
 
   const openModal = (id) => {
+    if (state.salesPaused) {
+      toast('商店暂停销售，请稍后再来', 'info');
+      return;
+    }
     const product = state.products.find((p) => p.id === id);
     if (!product) return;
     if (product.stock <= 0) {
@@ -207,7 +220,7 @@
   };
 
   const checkout = async () => {
-    if (!state.current || state.submitting) return;
+    if (!state.current || state.submitting || !state.payType) return;
     state.submitting = true;
     el.error.hidden = true;
     el.submit.disabled = true;
@@ -240,6 +253,7 @@
     try {
       const data = await api('/api/store');
       state.products = data.products || [];
+      state.salesPaused = Boolean(data.salesPaused);
       applyPayMethods(data.payTypes);
       const stock = state.products.reduce((sum, p) => sum + p.stock, 0);
       $('#statStock').textContent = stock.toLocaleString('zh-CN');
