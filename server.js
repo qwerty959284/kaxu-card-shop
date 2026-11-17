@@ -10,9 +10,11 @@ import {
   closeOrder,
   createOrder,
   createProduct,
+  createSupportMessage,
   dashboardData,
   deleteCards,
   deleteProduct,
+  deleteSupportMessage,
   exportCardsCsv,
   findOrderByNo,
   getClientOrder,
@@ -22,7 +24,10 @@ import {
   listBatches,
   listCards,
   listPublicProducts,
+  listSupportMessages,
+  lookupOrders,
   manualMarkPaid,
+  markSupportMessage,
   productStats,
   releaseExpiredOrders,
   restockProduct,
@@ -168,6 +173,23 @@ function parseLines(text, max = 5000) {
     .slice(0, max);
 }
 
+const lookupAttempts = new Map();
+const supportAttempts = new Map();
+
+function rateLimit(map, key, max, windowMs, message) {
+  const now = Date.now();
+  const entry = map.get(key);
+  if (entry && entry.reset > now) {
+    if (entry.count >= max) throw new AppError(message, 429, 'RATE_LIMITED');
+    entry.count += 1;
+    return;
+  }
+  map.set(key, { count: 1, reset: now + windowMs });
+  if (map.size > 5000) {
+    for (const [k, v] of map) if (v.reset <= now) map.delete(k);
+  }
+}
+
 function normalizeProductPayload(body) {
   const has = (key) => Object.prototype.hasOwnProperty.call(body, key);
   let features;
@@ -247,6 +269,20 @@ async function handleApi(req, res, url) {
     });
   }
 
+  if (pathname === '/api/orders/lookup' && req.method === 'POST') {
+    rateLimit(lookupAttempts, ip, 12, 60_000, '查询过于频繁，请稍后再试');
+    const body = await readJson(req);
+    const items = lookupOrders({ query: body.query, password: body.password });
+    const baseUrl = requestBaseUrl(req);
+    return json(res, 200, {
+      ok: true,
+      items: items.map(({ accessToken, ...item }) => ({
+        ...item,
+        orderUrl: `${baseUrl}/order/${item.orderNo}?token=${encodeURIComponent(accessToken)}`,
+      })),
+    });
+  }
+
   if (pathname === '/api/orders' && req.method === 'POST') {
     const body = await readJson(req);
     const order = createOrder({
@@ -254,6 +290,7 @@ async function handleApi(req, res, url) {
       quantity: body.quantity,
       contact: String(body.contact || '').trim().slice(0, 80),
       payType: body.payType,
+      viewPassword: body.viewPassword,
       ip,
     });
     const baseUrl = requestBaseUrl(req);
@@ -308,6 +345,18 @@ async function handleApi(req, res, url) {
       const message = err instanceof AppError ? err.message : 'fail';
       return send(res, err.status || 400, err.code === 'IGNORED' ? 'success' : message, 'text/plain; charset=utf-8');
     }
+  }
+
+  if (pathname === '/api/support' && req.method === 'POST') {
+    rateLimit(supportAttempts, ip, 5, 10 * 60_000, '留言过于频繁，请稍后再试');
+    const body = await readJson(req);
+    const result = createSupportMessage({
+      orderNo: body.orderNo,
+      contact: body.contact,
+      message: body.message,
+      ip,
+    });
+    return json(res, 201, { ok: true, id: result.id });
   }
 
   /* ----------------------------- 管理端 ----------------------------- */
@@ -370,6 +419,8 @@ async function handleAdminApi(req, res, url, session) {
     const data = listAdminOrders({
       status: url.searchParams.get('status') || 'all',
       q: (url.searchParams.get('q') || '').trim().slice(0, 80),
+      card: (url.searchParams.get('card') || '').trim().slice(0, 100),
+      tradeNo: (url.searchParams.get('tradeNo') || '').trim().slice(0, 100),
       page: parseIntOr(url.searchParams.get('page'), 1),
       pageSize: 12,
     });
@@ -431,6 +482,27 @@ async function handleAdminApi(req, res, url, session) {
       wxpay: saved.includes('wxpay'),
       salesPaused: saved.length === 0,
     });
+  }
+
+  if (pathname === '/api/admin/support' && req.method === 'GET') {
+    const data = listSupportMessages({
+      status: url.searchParams.get('status') || 'all',
+      page: parseIntOr(url.searchParams.get('page'), 1),
+      pageSize: 20,
+    });
+    return json(res, 200, { ok: true, ...data });
+  }
+
+  const supportActionMatch = pathname.match(/^\/api\/admin\/support\/(\d+)(?:\/read)?$/);
+  if (supportActionMatch && req.method === 'POST') {
+    const body = await readJson(req);
+    markSupportMessage(Number(supportActionMatch[1]), body.read !== false);
+    return json(res, 200, { ok: true });
+  }
+
+  if (supportActionMatch && req.method === 'DELETE') {
+    deleteSupportMessage(Number(supportActionMatch[1]));
+    return json(res, 200, { ok: true });
   }
 
   if (pathname === '/api/admin/products' && req.method === 'GET') {
@@ -617,6 +689,9 @@ const server = http.createServer(async (req, res) => {
     const orderPage = pathname.match(/^\/order\/[A-Z0-9]+$/);
     if (orderPage && (req.method === 'GET' || req.method === 'HEAD')) {
       return serveFile(req, res, path.join(config.publicDir, 'order.html'));
+    }
+    if ((pathname === '/query' || pathname === '/query/') && (req.method === 'GET' || req.method === 'HEAD')) {
+      return serveFile(req, res, path.join(config.publicDir, 'query.html'));
     }
     const payMatch = pathname.match(/^\/pay\/([A-Z0-9]+)$/);
     if (payMatch && req.method === 'GET') {

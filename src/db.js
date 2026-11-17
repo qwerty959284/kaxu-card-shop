@@ -59,6 +59,7 @@ db.exec(`
     quantity INTEGER NOT NULL,
     amount_cents INTEGER NOT NULL,
     contact TEXT,
+    view_password_hash TEXT,
     status TEXT NOT NULL DEFAULT 'pending',
     trade_no TEXT,
     pay_type TEXT NOT NULL DEFAULT 'alipay',
@@ -98,12 +99,30 @@ db.exec(`
     value TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS support_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_no TEXT,
+    contact TEXT,
+    message TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    ip TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_support_status_created ON support_messages(status, created_at);
+
   CREATE INDEX IF NOT EXISTS idx_cards_product_status ON cards(product_id, status, id);
   CREATE INDEX IF NOT EXISTS idx_cards_order ON cards(order_id);
   CREATE INDEX IF NOT EXISTS idx_orders_status_created ON orders(status, created_at);
   CREATE INDEX IF NOT EXISTS idx_orders_product ON orders(product_id);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_cards_product_secret ON cards(product_id, secret);
 `);
+
+// 兼容已存在的数据库：新增订单查询密码字段
+const orderColumns = db.prepare('PRAGMA table_info(orders)').all();
+if (!orderColumns.some((column) => column.name === 'view_password_hash')) {
+  db.exec('ALTER TABLE orders ADD COLUMN view_password_hash TEXT');
+}
 
 /** 同步事务封装（node:sqlite 没有 better-sqlite3 的 transaction 辅助） */
 export function tx(fn) {

@@ -2195,6 +2195,315 @@ body.order-page {
   line-height: 1.7;
 }
 
+/* ============================== 订单查询 ============================== */
+
+.query-page .order-wrap {
+  padding-top: 54px;
+}
+
+.query-hero {
+  max-width: 620px;
+  margin-bottom: 28px;
+}
+
+.query-hero h1 {
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 630;
+  letter-spacing: -0.045em;
+  line-height: 1.15;
+}
+
+.query-hero p {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.query-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 318px;
+  gap: 20px;
+  align-items: start;
+}
+
+.query-card {
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: linear-gradient(168deg, rgba(255, 255, 255, 0.032), rgba(255, 255, 255, 0.01));
+}
+
+.lookup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.query-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 122, 133, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 122, 133, 0.06);
+  color: #ff9ca4;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.query-error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.query-results {
+  margin-top: 24px;
+}
+
+.query-results:not(:empty) {
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.query-result-title {
+  margin-bottom: 10px;
+  color: var(--muted-2);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.query-result {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px 16px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: 0.2s;
+}
+
+.query-result + .query-result {
+  margin-top: 8px;
+}
+
+.query-result:hover {
+  border-color: rgba(111, 242, 191, 0.26);
+  background: rgba(111, 242, 191, 0.04);
+}
+
+.query-result > svg {
+  flex-shrink: 0;
+  color: var(--muted-2);
+}
+
+.query-result-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.query-result-main strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.query-result-main span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-2);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+}
+
+.query-result-side {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.query-result-side b {
+  display: block;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.query-status {
+  display: inline-block;
+  margin-top: 3px;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 8.5px;
+  font-style: normal;
+}
+
+.query-status.status-delivered {
+  border-color: rgba(111, 242, 191, 0.22);
+  background: rgba(111, 242, 191, 0.07);
+  color: var(--mint);
+}
+
+.query-status.status-pending {
+  border-color: rgba(255, 197, 110, 0.22);
+  background: rgba(255, 197, 110, 0.07);
+  color: var(--amber);
+}
+
+.query-status.status-paid_pending {
+  border-color: rgba(255, 122, 133, 0.22);
+  background: rgba(255, 122, 133, 0.07);
+  color: #ff9ca4;
+}
+
+.query-tip {
+  margin-top: 18px;
+  color: var(--muted-2);
+  font-size: 10.5px;
+  text-align: center;
+}
+
+.query-tip .text-link {
+  padding: 0;
+  font-size: inherit;
+}
+
+.query-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.query-aside .aside-card {
+  padding: 20px;
+}
+
+/* ============================== 联系管理员 ============================== */
+
+.support-card {
+  width: min(520px, 100%);
+  padding: 28px;
+}
+
+.support-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 34px;
+}
+
+.support-head-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 1px solid rgba(111, 242, 191, 0.18);
+  border-radius: 12px;
+  background: rgba(111, 242, 191, 0.06);
+  color: var(--mint);
+}
+
+.support-head small {
+  display: block;
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.16em;
+}
+
+.support-head h3 {
+  margin-top: 3px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.support-intro {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.75;
+}
+
+.support-card form {
+  margin-top: 18px;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.support-card .textarea {
+  min-height: 126px;
+}
+
+.support-card .btn-block {
+  margin-top: 14px;
+}
+
+.support-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 122, 133, 0.22);
+  border-radius: 8px;
+  background: rgba(255, 122, 133, 0.06);
+  color: #ff9ca4;
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.support-error svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@media (max-width: 860px) {
+  .query-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .query-aside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .query-card {
+    padding: 20px;
+  }
+
+  .query-aside {
+    grid-template-columns: 1fr;
+  }
+
+  .support-card {
+    padding: 22px;
+  }
+
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .query-result {
+    gap: 10px;
+    padding: 13px;
+  }
+}
+
 /* ============================== 支付跳转页 ============================== */
 
 body.pay-redirect-page {

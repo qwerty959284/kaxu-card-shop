@@ -1,6 +1,7 @@
 import { db, tx } from './db.js';
 import { config } from './config.js';
 import { queryRemoteOrder, verifySign } from './epay.js';
+import { hashPassword, verifyPassword } from './password.js';
 import {
   addMinutes,
   centsToMoney,
@@ -130,8 +131,12 @@ export function getPublicProduct(id) {
   };
 }
 
-export function createOrder({ productId, quantity, contact, payType, ip }) {
+export function createOrder({ productId, quantity, contact, payType, viewPassword, ip }) {
   releaseExpiredOrders();
+  const password = String(viewPassword || '').trim();
+  if (!/^\d{4,12}$/.test(password)) {
+    throw new AppError('请设置 4-12 位数字查询密码', 400, 'INVALID_VIEW_PASSWORD');
+  }
   if (ip) {
     const recent = db
       .prepare(
@@ -156,6 +161,7 @@ export function createOrder({ productId, quantity, contact, payType, ip }) {
   const methods = getPaymentMethods();
   if (!methods.length) throw new AppError('商店暂停销售，请稍后再试', 503, 'SALES_PAUSED');
   const type = methods.includes(payType) ? payType : methods[0];
+  const viewPasswordHash = hashPassword(password);
 
   return tx(() => {
     const cards = db
@@ -175,8 +181,8 @@ export function createOrder({ productId, quantity, contact, payType, ip }) {
     const result = db
       .prepare(
         `INSERT INTO orders
-          (order_no, access_token, product_id, product_name, unit_price_cents, quantity, amount_cents, contact, status, pay_type, client_ip, created_at, expires_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`,
+          (order_no, access_token, product_id, product_name, unit_price_cents, quantity, amount_cents, contact, view_password_hash, status, pay_type, client_ip, created_at, expires_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)`,
       )
       .run(
         orderNo,
@@ -187,6 +193,7 @@ export function createOrder({ productId, quantity, contact, payType, ip }) {
         qty,
         product.priceCents * qty,
         contact || null,
+        viewPasswordHash,
         type,
         ip || null,
         createdAt,
@@ -256,6 +263,86 @@ export function getClientOrder(orderNo, token) {
     throw new AppError('订单凭证无效，请从下单链接进入', 403, 'INVALID_TOKEN');
   }
   return order;
+}
+
+export function lookupOrders({ query, password }) {
+  releaseExpiredOrders();
+  const q = String(query || '').trim();
+  const pwd = String(password || '');
+  if (q.length < 4) throw new AppError('请输入完整的订单号、联系方式或卡密', 400, 'INVALID_QUERY');
+  if (!/^\d{4,12}$/.test(pwd)) throw new AppError('请输入下单时设置的查询密码', 400, 'INVALID_PASSWORD');
+
+  const rows = db
+    .prepare(
+      `SELECT o.* FROM orders o
+       WHERE o.order_no = ?
+          OR o.contact = ?
+          OR o.trade_no = ?
+          OR EXISTS (SELECT 1 FROM cards c WHERE c.order_id = o.id AND c.secret = ?)
+       ORDER BY o.id DESC
+       LIMIT 20`,
+    )
+    .all(q, q, q, q);
+
+  return rows
+    .filter((row) => row.view_password_hash && verifyPassword(pwd, row.view_password_hash))
+    .map((row) => ({
+      orderNo: row.order_no,
+      accessToken: row.access_token,
+      productName: row.product_name,
+      quantity: row.quantity,
+      amountCents: row.amount_cents,
+      status: row.status,
+      payType: row.pay_type,
+      createdAt: row.created_at,
+      paidAt: row.paid_at,
+    }));
+}
+
+/* ============================ 联系管理员 ============================ */
+
+export function createSupportMessage({ orderNo, contact, message, ip }) {
+  const text = String(message || '').trim();
+  const contactText = String(contact || '').trim().slice(0, 80);
+  const orderText = String(orderNo || '').trim().slice(0, 40);
+  if (text.length < 5) throw new AppError('请至少填写 5 个字的留言内容', 400, 'MESSAGE_TOO_SHORT');
+  if (text.length > 500) throw new AppError('留言不能超过 500 个字', 400, 'MESSAGE_TOO_LONG');
+
+  const result = db
+    .prepare('INSERT INTO support_messages (order_no, contact, message, status, ip, created_at) VALUES (?, ?, ?, ?, ?, ?)')
+    .run(orderText || null, contactText || null, text, 'new', ip || null, nowIso());
+  return { id: Number(result.lastInsertRowid) };
+}
+
+export function listSupportMessages({ status = 'all', page = 1, pageSize = 20 }) {
+  const where = [];
+  const params = [];
+  if (status === 'new' || status === 'read') {
+    where.push('status = ?');
+    params.push(status);
+  }
+  const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const total = db.prepare(`SELECT COUNT(*) AS n FROM support_messages ${whereSql}`).get(...params).n;
+  const p = paginate(total, page, pageSize);
+  const items = db
+    .prepare(`SELECT * FROM support_messages ${whereSql} ORDER BY id DESC LIMIT ? OFFSET ?`)
+    .all(...params, p.pageSize, p.offset);
+  return { ...p, items };
+}
+
+export function markSupportMessage(id, read = true) {
+  const result = db
+    .prepare('UPDATE support_messages SET status = ? WHERE id = ?')
+    .run(read ? 'read' : 'new', Number(id));
+  if (!result.changes) throw new AppError('留言不存在', 404, 'MESSAGE_NOT_FOUND');
+}
+
+export function deleteSupportMessage(id) {
+  db.prepare('DELETE FROM support_messages WHERE id = ?').run(Number(id));
+}
+
+export function countUnreadSupport() {
+  return db.prepare("SELECT COUNT(*) AS n FROM support_messages WHERE status = 'new'").get().n;
 }
 
 function deliverOrder(order, { tradeNo, source }) {
@@ -455,6 +542,7 @@ export function dashboardData() {
   const demoCards = db
     .prepare("SELECT COUNT(*) AS n FROM cards WHERE batch = 'DEMO' AND status = 'available'")
     .get().n;
+  const supportUnread = countUnreadSupport();
 
   return {
     stats: {
@@ -467,6 +555,7 @@ export function dashboardData() {
       pending,
       waiting,
       demoCards,
+      supportUnread,
     },
     recentOrders,
     lowStock,
@@ -498,7 +587,7 @@ function mapAdminOrder(row) {
   };
 }
 
-export function listAdminOrders({ status = 'all', q = '', page = 1, pageSize = 12 }) {
+export function listAdminOrders({ status = 'all', q = '', card = '', tradeNo = '', page = 1, pageSize = 12 }) {
   const where = [];
   const params = [];
   if (['pending', 'delivered', 'paid_pending', 'closed'].includes(status)) {
@@ -509,6 +598,14 @@ export function listAdminOrders({ status = 'all', q = '', page = 1, pageSize = 1
     where.push('(o.order_no LIKE ? OR o.product_name LIKE ? OR o.contact LIKE ? OR o.trade_no LIKE ?)');
     const like = `%${q}%`;
     params.push(like, like, like, like);
+  }
+  if (card) {
+    where.push('EXISTS (SELECT 1 FROM cards c WHERE c.order_id = o.id AND c.secret LIKE ?)');
+    params.push(`%${card}%`);
+  }
+  if (tradeNo) {
+    where.push('o.trade_no LIKE ?');
+    params.push(`%${tradeNo}%`);
   }
   const whereSql = where.length ? `WHERE ${where.join(' AND ')}` : '';
   const total = db.prepare(`SELECT COUNT(*) AS n FROM orders o ${whereSql}`).get(...params).n;

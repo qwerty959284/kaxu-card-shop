@@ -32,6 +32,11 @@
       subtitle: '每一笔订单，都有迹可循。',
       load: loadSales,
     },
+    support: {
+      title: '留言中心',
+      subtitle: '客户联系管理员的留言都在这里。',
+      load: loadSupport,
+    },
     restock: {
       title: '卡密补充',
       subtitle: '补充库存，立即开卖。',
@@ -58,7 +63,7 @@
     me: null,
     dashboard: null,
     products: [],
-    sales: { page: 1, status: 'all', q: '', total: 0, totalPages: 1 },
+    sales: { page: 1, status: 'all', q: '', card: '', tradeNo: '', total: 0, totalPages: 1 },
     cards: {
       page: 1,
       status: 'all',
@@ -72,6 +77,7 @@
     restock: { productId: null },
     create: { editingId: null, icon: 'card', accent: 'mint' },
     channels: { alipay: true, wxpay: true },
+    support: { status: 'all', page: 1, totalPages: 1 },
     searchTimer: null,
     currentView: 'dashboard',
   };
@@ -296,6 +302,13 @@
     const count = pending + waiting;
     badge.hidden = count <= 0;
     badge.textContent = count > 99 ? '99+' : String(count);
+
+    const supportBadge = $('#navSupportBadge');
+    const unread = Number(stats.supportUnread || 0);
+    if (supportBadge) {
+      supportBadge.hidden = unread <= 0;
+      supportBadge.textContent = unread > 99 ? '99+' : String(unread);
+    }
   };
 
   /* ============================== 通道控制 ============================== */
@@ -410,6 +423,133 @@
         btn.disabled = false;
         btn.innerHTML = `${icon('check', 14)} 保存通道设置`;
       }
+    });
+  }
+
+  /* ============================== 留言中心 ============================== */
+
+  async function loadSupport() {
+    const data = await api(
+      `/api/admin/support?status=${encodeURIComponent(state.support.status)}&page=${state.support.page}`,
+    );
+    state.support.page = data.page;
+    state.support.totalPages = data.totalPages;
+    const newCount = data.items.filter((item) => item.status === 'new').length;
+
+    content.innerHTML = `
+      <div class="view-enter">
+        <div class="sales-head">
+          <div><h2>客户留言</h2><p>客户在订单页或查询页提交的留言，会出现在这里。</p></div>
+          <div class="sales-stats">
+            <div class="sales-stat"><strong>${data.total}</strong><span>当前筛选留言</span></div>
+            <div class="sales-stat"><strong>${newCount}</strong><span>本页未读</span></div>
+          </div>
+        </div>
+
+        <section class="panel">
+          <div class="toolbar">
+            <div class="filter-chips" id="supportStatusChips">
+              ${[
+                ['all', '全部'],
+                ['new', '未读'],
+                ['read', '已读'],
+              ]
+                .map(
+                  ([value, label]) =>
+                    `<button class="chip-btn${state.support.status === value ? ' is-active' : ''}" type="button" data-status="${value}">${label}</button>`,
+                )
+                .join('')}
+            </div>
+            <span class="toolbar-spacer"></span>
+            <button class="icon-btn" type="button" id="supportRefresh" title="刷新">${icon('refresh', 15)}</button>
+          </div>
+          <div class="support-list">
+            ${
+              data.items.length
+                ? data.items
+                    .map(
+                      (item) => `
+              <article class="support-item ${item.status === 'new' ? 'is-new' : ''}">
+                <div class="support-meta">
+                  <span class="support-dot"></span>
+                  <strong>${item.order_no ? esc(item.order_no) : '未填写订单号'}</strong>
+                  ${item.contact ? `<span>${esc(item.contact)}</span>` : ''}
+                  <time>${dateTime(item.created_at)}</time>
+                  <em class="${item.status === 'new' ? 'tag tag-mint' : 'tag'}">${item.status === 'new' ? '未读' : '已读'}</em>
+                </div>
+                <p class="support-message">${esc(item.message)}</p>
+                <div class="support-actions">
+                  <button class="row-btn" type="button" data-support-read="${item.id}" data-read="${item.status === 'new' ? '1' : '0'}">
+                    ${item.status === 'new' ? '标为已读' : '标为未读'}
+                  </button>
+                  <button class="row-btn danger" type="button" data-support-delete="${item.id}">${icon('trash', 12)} 删除</button>
+                </div>
+              </article>`,
+                    )
+                    .join('')
+                : `<div class="admin-empty">${icon('mail', 30)}<strong>还没有留言</strong><p>客户提交的留言会显示在这里。</p></div>`
+            }
+          </div>
+          <div class="pagination">
+            <span class="pagination-info">共 ${data.total} 条 · 第 ${data.page} / ${data.totalPages} 页</span>
+            <div class="pagination-btns">
+              <button class="page-btn" type="button" data-support-page="${data.page - 1}" ${data.page <= 1 ? 'disabled' : ''}>${icon('chevronLeft', 12)}</button>
+              <span class="page-btn is-active">${data.page}</span>
+              <button class="page-btn" type="button" data-support-page="${data.page + 1}" ${data.page >= data.totalPages ? 'disabled' : ''}>${icon('chevronRight', 12)}</button>
+            </div>
+          </div>
+        </section>
+      </div>`;
+
+    hydrateIcons(content);
+
+    $('#supportStatusChips').addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-status]');
+      if (!btn) return;
+      state.support.status = btn.dataset.status;
+      state.support.page = 1;
+      loadSupport();
+    });
+    $('#supportRefresh').addEventListener('click', loadSupport);
+    content.querySelectorAll('[data-support-page]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        state.support.page = Number(btn.dataset.supportPage);
+        loadSupport();
+      });
+    });
+    content.querySelectorAll('[data-support-read]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await api(`/api/admin/support/${btn.dataset.supportRead}/read`, {
+            method: 'POST',
+            body: { read: btn.dataset.read === '1' },
+          });
+          await loadSupport();
+          refreshSidebar();
+        } catch (err) {
+          toast(err.message || '操作失败', 'error');
+          btn.disabled = false;
+        }
+      });
+    });
+    content.querySelectorAll('[data-support-delete]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const ok = await confirmDialog({
+          title: '删除留言',
+          message: '删除后无法恢复，确定删除这条客户留言吗？',
+          confirmText: '删除',
+        });
+        if (!ok) return;
+        try {
+          await api(`/api/admin/support/${btn.dataset.supportDelete}`, { method: 'DELETE' });
+          toast('留言已删除');
+          await loadSupport();
+          refreshSidebar();
+        } catch (err) {
+          toast(err.message || '删除失败', 'error');
+        }
+      });
     });
   }
 
@@ -581,6 +721,14 @@
               <span>${icon('search', 14)}</span>
               <input class="input" id="salesSearch" type="search" placeholder="订单号 / 商品 / 联系方式" value="${esc(state.sales.q)}" autocomplete="off">
             </div>
+            <div class="search-box">
+              <span>${icon('key', 14)}</span>
+              <input class="input" id="salesCardSearch" type="search" placeholder="搜索卡密" value="${esc(state.sales.card)}" autocomplete="off">
+            </div>
+            <div class="search-box">
+              <span>${icon('wallet', 14)}</span>
+              <input class="input" id="salesTradeSearch" type="search" placeholder="支付单号" value="${esc(state.sales.tradeNo)}" autocomplete="off">
+            </div>
             <span class="toolbar-spacer"></span>
             <button class="icon-btn" type="button" id="salesRefresh" title="刷新">${icon('refresh', 15)}</button>
           </div>
@@ -605,6 +753,24 @@
         loadSalesTable();
       }, 320);
     });
+    $('#salesCardSearch').addEventListener('input', (event) => {
+      clearTimeout(state.searchTimer);
+      const value = event.target.value.trim();
+      state.searchTimer = setTimeout(() => {
+        state.sales.card = value;
+        state.sales.page = 1;
+        loadSalesTable();
+      }, 320);
+    });
+    $('#salesTradeSearch').addEventListener('input', (event) => {
+      clearTimeout(state.searchTimer);
+      const value = event.target.value.trim();
+      state.searchTimer = setTimeout(() => {
+        state.sales.tradeNo = value;
+        state.sales.page = 1;
+        loadSalesTable();
+      }, 320);
+    });
     $('#salesRefresh').addEventListener('click', loadSalesTable);
 
     await loadSalesTable();
@@ -617,6 +783,8 @@
       const data = await api(
         `/api/admin/orders?status=${encodeURIComponent(state.sales.status)}&q=${encodeURIComponent(
           state.sales.q,
+        )}&card=${encodeURIComponent(state.sales.card)}&tradeNo=${encodeURIComponent(
+          state.sales.tradeNo,
         )}&page=${state.sales.page}`,
       );
       state.sales.page = data.page;

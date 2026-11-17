@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>订单查询 · 卡序</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/store.css">
+</head>
+<body class="order-page query-page">
+  <header class="order-header">
+    <div class="container nav">
+      <a class="brand" href="/" aria-label="卡序首页">
+        <span class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="6.2" y="3.6" width="13.2" height="9.6" rx="2" transform="rotate(9 12.8 8.4)" fill="currentColor" opacity=".42"/>
+            <rect x="4" y="8" width="14.4" height="10.3" rx="2.2" fill="currentColor"/>
+            <path d="M7.4 12.2h7.6M7.4 15.1h4.8" stroke="#b6ffe4" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="brand-name"><strong>卡序</strong><span>KAXU.STORE</span></span>
+      </a>
+      <a class="nav-back" href="/">
+        <span data-icon="arrowLeft" data-size="14"></span>
+        <span>返回商店</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="order-wrap">
+    <div class="container">
+      <div class="query-hero">
+        <span class="eyebrow">Order lookup</span>
+        <h1>找回你的订单</h1>
+        <p>输入订单号、下单时填写的联系方式或卡密，再输入查询密码，即可打开订单页。</p>
+      </div>
+
+      <div class="query-grid">
+        <section class="query-card">
+          <form id="lookupForm" class="lookup-form" novalidate>
+            <label class="field">
+              <span class="field-label">订单号 / 联系方式 / 卡密</span>
+              <input class="input" id="lookupQuery" type="text" maxlength="120" autocomplete="off" placeholder="例如：K20261117... / QQ / 卡密" autofocus>
+            </label>
+            <label class="field">
+              <span class="field-label">查询密码 <small>下单时设置的 4-12 位数字</small></span>
+              <input class="input" id="lookupPassword" type="password" inputmode="numeric" maxlength="12" autocomplete="off" placeholder="请输入查询密码">
+            </label>
+            <div class="query-error" id="lookupError" hidden>
+              <span data-icon="alert" data-size="13"></span>
+              <span id="lookupErrorText"></span>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit" id="lookupBtn">
+              查询订单
+              <span data-icon="search" data-size="16"></span>
+            </button>
+          </form>
+
+          <div class="query-results" id="lookupResults"></div>
+
+          <p class="query-tip">
+            忘记查询密码？<button class="text-link" type="button" data-support>联系管理员</button>
+          </p>
+        </section>
+
+        <aside class="query-aside">
+          <div class="aside-card">
+            <h4><span data-icon="lock" data-size="14"></span> 查询密码</h4>
+            <p>查询密码是下单时你自己设置的 4-12 位数字，不会显示在订单页上。管理员也无法查看明文，只能帮你核对订单。</p>
+          </div>
+          <div class="aside-card order-support">
+            <strong>订单有问题？</strong>
+            <span>付款后没收到卡密、卡密无效、或忘记查询密码，可以给管理员留言，系统会自动记录。</span>
+            <button class="btn btn-ghost btn-sm" type="button" data-support style="margin-top:12px;width:100%">
+              <span data-icon="mail" data-size="14"></span> 联系管理员
+            </button>
+          </div>
+          <div class="aside-card">
+            <h4><span data-icon="info" data-size="14"></span> 安全提醒</h4>
+            <p>订单链接和查询密码都不要发给他人。管理员不会向你索要支付密码。</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast-root"></div>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/support.js"></script>
+  <script src="/assets/js/query.js"></script>
+</body>
+</html>

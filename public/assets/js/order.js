@@ -190,6 +190,11 @@
       </div>`;
 
     hydrateIcons(root);
+    const supportBtn = $('#orderSupportBtn');
+    if (supportBtn) {
+      supportBtn.dataset.order = order.orderNo;
+      supportBtn.dataset.contact = order.contact || '';
+    }
     startCountdown();
     renderPolling();
   };
@@ -221,7 +226,7 @@
   const renderPolling = () => {
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = null;
-    if (!order || order.status !== 'pending') return;
+    if (!order || !['pending', 'paid_pending'].includes(order.status)) return;
     pollTimer = setInterval(async () => {
       if (document.hidden || stopped) return;
       await refresh({ sync: true });
@@ -314,7 +319,7 @@
   });
 
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden && order && order.status === 'pending' && !stopped) {
+    if (!document.hidden && order && ['pending', 'paid_pending'].includes(order.status) && !stopped) {
       refresh({ sync: true });
     }
   });

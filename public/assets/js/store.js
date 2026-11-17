@@ -28,6 +28,7 @@
     minus: $('#qtyMinus'),
     plus: $('#qtyPlus'),
     contact: $('#purchaseContact'),
+    password: $('#purchasePassword'),
     total: $('#purchaseTotal'),
     error: $('#purchaseError'),
     errorText: $('#purchaseErrorText'),
@@ -197,6 +198,7 @@
       .join('');
     el.stock.textContent = `库存 ${product.stock} 张 · 单笔限购 10 张`;
     el.contact.value = '';
+    el.password.value = '';
     el.error.hidden = true;
     el.submit.disabled = false;
     resetCheckoutLabel('使用支付宝支付');
@@ -221,6 +223,12 @@
 
   const checkout = async () => {
     if (!state.current || state.submitting || !state.payType) return;
+    const viewPassword = el.password.value.trim();
+    if (!/^\d{4,12}$/.test(viewPassword)) {
+      showError('请设置 4-12 位数字查询密码，用于以后找回订单');
+      el.password.focus();
+      return;
+    }
     state.submitting = true;
     el.error.hidden = true;
     el.submit.disabled = true;
@@ -233,6 +241,7 @@
           quantity: state.qty,
           contact: el.contact.value.trim(),
           payType: state.payType,
+          viewPassword,
         },
       });
       const target = `${data.payUrl}&type=${state.payType}`;
