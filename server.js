@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { config } from './src/config.js';
 import { db } from './src/db.js';
+import { handleSelfhostRequest, selfhostConfig } from './src/selfhost.js';
 import {
   AppError,
   adminOrderDetail,
@@ -415,6 +416,27 @@ async function handleAdminApi(req, res, url, session) {
     return json(res, 200, { ok: true, ...dashboardData() });
   }
 
+  if (pathname === '/api/admin/selfhost' && req.method === 'GET') {
+    const logs = db
+      .prepare('SELECT * FROM gateway_logs ORDER BY id DESC LIMIT 50')
+      .all()
+      .map((row) => ({
+        id: row.id,
+        method: row.method,
+        path: row.path,
+        params: row.params,
+        ip: row.ip,
+        note: row.note,
+        createdAt: row.created_at,
+      }));
+    return json(res, 200, {
+      ok: true,
+      ...selfhostConfig(),
+      address: requestBaseUrl(req),
+      logs,
+    });
+  }
+
   if (pathname === '/api/admin/orders' && req.method === 'GET') {
     const data = listAdminOrders({
       status: url.searchParams.get('status') || 'all',
@@ -681,6 +703,28 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname;
 
   try {
+    const gatewayPath = pathname.endsWith('/api.php')
+      ? '/api.php'
+      : pathname.endsWith('/notify.php')
+        ? '/notify.php'
+        : pathname.endsWith('/submit.php')
+          ? '/submit.php'
+          : '';
+    if (gatewayPath) {
+      const queryParams = Object.fromEntries(url.searchParams.entries());
+      const params = { ...queryParams, ...(await readParams(req, url)) };
+      const result = handleSelfhostRequest({
+        method: req.method,
+        path: gatewayPath,
+        params,
+        ip: clientIp(req),
+      });
+      if (typeof result.body === 'string') {
+        return send(res, result.status, result.body, result.contentType);
+      }
+      return json(res, result.status, result.body);
+    }
+
     if (pathname.startsWith('/api/')) {
       await handleApi(req, res, url);
       return;

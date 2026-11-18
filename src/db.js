@@ -94,6 +94,18 @@ db.exec(`
     created_at TEXT NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS gateway_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    method TEXT,
+    path TEXT,
+    params TEXT,
+    ip TEXT,
+    note TEXT,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_gateway_logs_created ON gateway_logs(created_at);
+
   CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL

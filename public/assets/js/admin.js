@@ -57,6 +57,11 @@
       subtitle: '随时开关支付宝 / 微信支付通道。',
       load: loadChannels,
     },
+    selfhost: {
+      title: '自建支付',
+      subtitle: '自挂监控软件的商户接口与最近请求。',
+      load: loadSelfhost,
+    },
   };
 
   const state = {
@@ -441,6 +446,90 @@
         btn.innerHTML = `${icon('check', 14)} 保存通道设置`;
       }
     });
+  }
+
+  /* ============================== 自建支付 ============================== */
+
+  async function loadSelfhost() {
+    const data = await api('/api/admin/selfhost');
+    const logs = data.logs || [];
+    const rows = logs.length
+      ? logs
+          .map(
+            (row) => `
+              <tr>
+                <td class="cell-mono">${esc(fullDateTime(row.createdAt))}</td>
+                <td><span class="tag">${esc(row.method || '')} ${esc(row.path || '')}</span></td>
+                <td class="cell-note">${esc(row.note || '—')}</td>
+                <td class="cell-params">${esc((row.params || '').slice(0, 220))}</td>
+              </tr>`,
+          )
+          .join('')
+      : `<tr><td colspan="4" class="empty-cell">还没有收到请求。把监控软件的商户地址改成下面的地址，再点一次测试。</td></tr>`;
+
+    content.innerHTML = `
+      <div class="view-enter channels-view">
+        <div class="selfhost-stack">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">${icon('external', 15)} 商户接口</div>
+                <div class="panel-sub">把这三项填进自挂监控软件的「商户接口」</div>
+              </div>
+              <span class="${data.enabled ? 'tag tag-mint' : 'tag'}">${data.enabled ? '已启用' : '未配置密钥'}</span>
+            </div>
+            <form class="create-form" onsubmit="return false">
+              <div class="form-grid">
+                <label class="field span-2">
+                  <span class="field-label">商户地址</span>
+                  <input class="input" id="selfhostAddress" type="text" readonly value="${esc(data.address || '')}">
+                </label>
+                <label class="field">
+                  <span class="field-label">商户 ID</span>
+                  <input class="input" id="selfhostPid" type="text" readonly value="${esc(data.pid || '')}">
+                </label>
+                <label class="field">
+                  <span class="field-label">商户密钥</span>
+                  <input class="input" id="selfhostKey" type="text" readonly value="${esc(data.key || '')}" placeholder="未配置">
+                </label>
+              </div>
+              <p class="form-hint">${icon('alert', 14)} 商户地址只填根域名，不要带 /api.php；监控软件会自动拼接。密钥等同于收款权限，不要发给买家。</p>
+              <div class="form-actions">
+                <button class="btn btn-primary btn-sm" type="button" id="copySelfhost">
+                  ${icon('copy', 14)} 复制三项配置
+                </button>
+                <button class="btn btn-ghost btn-sm" type="button" id="refreshSelfhost">
+                  ${icon('refresh', 14)} 刷新请求
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">${icon('clock', 15)} 最近请求</div>
+                <div class="panel-sub">监控软件查单、上报收款都会记录在这里</div>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>时间</th><th>接口</th><th>结果</th><th>参数</th></tr></thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </div>`;
+
+    hydrateIcons(content);
+
+    $('#copySelfhost')?.addEventListener('click', async () => {
+      const text = `商户地址：${data.address || ''}\n商户 ID：${data.pid || ''}\n商户密钥：${data.key || ''}`;
+      const ok = await copyText(text);
+      toast(ok ? '三项配置已复制' : '复制失败，请手动选择复制', ok ? 'success' : 'error');
+    });
+    $('#refreshSelfhost')?.addEventListener('click', () => loadSelfhost());
   }
 
   /* ============================== 留言中心 ============================== */

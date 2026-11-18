@@ -450,8 +450,7 @@ export async function syncOrderWithProvider(order, { force = false } = {}) {
   }
 }
 
-export function handleNotify(params, ip) {
-  const signOk = verifySign(params);
+export function handleNotify(params, ip) {  const signOk = verifySign(params);
   db.prepare(
     'INSERT INTO payment_logs (order_no, source, sign_ok, payload, ip, created_at) VALUES (?, ?, ?, ?, ?, ?)',
   ).run(
@@ -474,6 +473,10 @@ export function handleNotify(params, ip) {
 
   deliverOrder(order, { tradeNo: params.trade_no || null, source: 'notify' });
   return order;
+}
+
+export function confirmSelfhostPayment(order, { tradeNo, source = 'selfhost' } = {}) {
+  return deliverOrder(order, { tradeNo, source });
 }
 
 /* ============================ 管理端 ============================ */

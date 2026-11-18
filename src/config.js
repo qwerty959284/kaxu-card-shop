@@ -60,6 +60,10 @@ export const config = {
     pid: process.env.EPAY_PID || '10169',
     key: process.env.EPAY_KEY || '',
   },
+  selfhost: {
+    pid: process.env.SELFHOST_PID || '10169',
+    key: process.env.SELFHOST_KEY || '',
+  },
   site: {
     name: '卡序',
     domain: 'KAXU.STORE',
