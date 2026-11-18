@@ -263,7 +263,7 @@ async function handleApi(req, res, url) {
       products: listPublicProducts(),
       payTypes: methods.map((id) => ({
         id,
-        label: id === 'wxpay' ? '微信支付' : '支付宝',
+        label: id === 'wxpay' ? '微信支付' : id === 'qqpay' ? 'QQ钱包' : '支付宝',
       })),
       salesPaused: methods.length === 0,
     });
@@ -465,6 +465,7 @@ async function handleAdminApi(req, res, url, session) {
       methods,
       alipay: methods.includes('alipay'),
       wxpay: methods.includes('wxpay'),
+      qqpay: methods.includes('qqpay'),
       salesPaused: methods.length === 0,
     });
   }
@@ -473,13 +474,18 @@ async function handleAdminApi(req, res, url, session) {
     const body = await readJson(req);
     const methods = Array.isArray(body.methods)
       ? body.methods
-      : [body.alipay ? 'alipay' : null, body.wxpay ? 'wxpay' : null].filter(Boolean);
+      : [
+          body.alipay ? 'alipay' : null,
+          body.wxpay ? 'wxpay' : null,
+          body.qqpay ? 'qqpay' : null,
+        ].filter(Boolean);
     const saved = setPaymentMethods(methods);
     return json(res, 200, {
       ok: true,
       methods: saved,
       alipay: saved.includes('alipay'),
       wxpay: saved.includes('wxpay'),
+      qqpay: saved.includes('qqpay'),
       salesPaused: saved.length === 0,
     });
   }

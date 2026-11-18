@@ -34,10 +34,10 @@ const railwayDomain = process.env.RAILWAY_PUBLIC_DOMAIN
   ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`
   : '';
 const autoBaseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || railwayDomain;
-const paymentMethods = (process.env.PAYMENT_METHODS || 'alipay,wxpay')
+const paymentMethods = (process.env.PAYMENT_METHODS || 'alipay,wxpay,qqpay')
   .split(',')
   .map((method) => method.trim().toLowerCase())
-  .filter((method) => method === 'alipay' || method === 'wxpay');
+  .filter((method) => method === 'alipay' || method === 'wxpay' || method === 'qqpay');
 
 export const config = {
   root: ROOT,

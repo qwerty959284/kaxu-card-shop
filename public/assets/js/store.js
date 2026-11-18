@@ -8,7 +8,7 @@
     current: null,
     qty: 1,
     payType: 'alipay',
-    payMethods: ['alipay', 'wxpay'],
+    payMethods: ['alipay', 'wxpay', 'qqpay'],
     salesPaused: false,
     submitting: false,
   };
@@ -136,6 +136,9 @@
     el.total.textContent = ((state.current.priceCents * state.qty) / 100).toFixed(2);
   };
 
+  const payNames = { alipay: '支付宝', wxpay: '微信支付', qqpay: 'QQ钱包' };
+  const payLabel = (type) => payNames[type] || '支付宝';
+
   const selectPay = (type) => {
     if (!state.payMethods.length) {
       state.payType = null;
@@ -148,22 +151,23 @@
     $$('.pay-option').forEach((option) => {
       option.classList.toggle('is-checked', option.dataset.pay === state.payType);
     });
-    resetCheckoutLabel(
-      state.payType === 'wxpay' ? '使用微信支付' : '使用支付宝支付',
-    );
+    resetCheckoutLabel(`使用${payLabel(state.payType)}支付`);
   };
 
   const applyPayMethods = (types) => {
     const ids = (types || [])
       .map((item) => (typeof item === 'string' ? item : item.id))
-      .filter((id) => id === 'alipay' || id === 'wxpay');
+      .filter((id) => id === 'alipay' || id === 'wxpay' || id === 'qqpay');
     state.payMethods = ids;
     state.salesPaused = ids.length === 0;
     $$('.pay-option').forEach((option) => {
       option.hidden = !state.payMethods.includes(option.dataset.pay);
     });
     const box = $('#payOptions');
-    if (box) box.classList.toggle('single', state.payMethods.length <= 1);
+    if (box) {
+      box.classList.toggle('single', state.payMethods.length === 1);
+      box.classList.toggle('triple', state.payMethods.length === 3);
+    }
     selectPay(state.payMethods[0]);
   };
 
@@ -250,7 +254,7 @@
     } catch (err) {
       state.submitting = false;
       el.submit.disabled = false;
-      resetCheckoutLabel(state.payType === 'wxpay' ? '使用微信支付' : '使用支付宝支付');
+      resetCheckoutLabel(`使用${payLabel(state.payType)}支付`);
       showError(err.message || '创建订单失败，请稍后重试');
       if (/库存/.test(err.message)) {
         loadStore(true);

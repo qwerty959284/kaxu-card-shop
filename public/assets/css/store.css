@@ -1543,6 +1543,14 @@ section[id] {
   margin-top: 10px;
 }
 
+.pay-options.single {
+  grid-template-columns: 1fr;
+}
+
+.pay-options.triple {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .pay-option {
   position: relative;
   display: flex;
@@ -1589,6 +1597,13 @@ section[id] {
 .pay-logo.wechat {
   background: #07c160;
   color: #fff;
+}
+
+.pay-logo.qq {
+  background: #12b7f5;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .pay-logo svg {
@@ -2894,6 +2909,10 @@ body.pay-redirect-page {
   }
 
   .pay-options {
+    grid-template-columns: 1fr;
+  }
+
+  .pay-options.triple {
     grid-template-columns: 1fr;
   }
 

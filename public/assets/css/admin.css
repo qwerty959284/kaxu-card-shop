@@ -866,6 +866,10 @@ body.admin-body {
   background: #07c160;
 }
 
+.channel-icon.qq {
+  background: #12b7f5;
+}
+
 .channel-info {
   flex: 1;
   min-width: 0;

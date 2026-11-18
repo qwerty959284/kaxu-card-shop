@@ -76,7 +76,7 @@
     },
     restock: { productId: null },
     create: { editingId: null, icon: 'card', accent: 'mint' },
-    channels: { alipay: true, wxpay: true },
+    channels: { alipay: true, wxpay: true, qqpay: true },
     support: { status: 'all', page: 1, totalPages: 1 },
     searchTimer: null,
     currentView: 'dashboard',
@@ -95,10 +95,11 @@
   const statusPill = (status) =>
     `<span class="status-pill status-${esc(status)}"><i></i>${statusLabels[status] || esc(status)}</span>`;
 
-  const payLabel = (type) => (type === 'wxpay' ? '微信' : '支付宝');
+  const payLabel = (type) =>
+    type === 'wxpay' ? '微信' : type === 'qqpay' ? 'QQ钱包' : '支付宝';
   const payDot = (type) =>
     `<span style="display:inline-block;width:6px;height:6px;border-radius:2px;background:${
-      type === 'wxpay' ? '#07c160' : '#1677ff'
+      type === 'wxpay' ? '#07c160' : type === 'qqpay' ? '#12b7f5' : '#1677ff'
     };margin-right:5px;vertical-align:1px"></span>`;
 
   const viewLoading = () => {
@@ -315,8 +316,8 @@
 
   async function loadChannels() {
     const data = await api('/api/admin/payment-methods');
-    state.channels = { alipay: data.alipay, wxpay: data.wxpay };
-    const labels = [data.alipay ? '支付宝' : '', data.wxpay ? '微信' : ''].filter(Boolean);
+    state.channels = { alipay: data.alipay, wxpay: data.wxpay, qqpay: data.qqpay };
+    const labels = [data.alipay ? '支付宝' : '', data.wxpay ? '微信' : '', data.qqpay ? 'QQ钱包' : ''].filter(Boolean);
     const summary = labels.length ? labels.join(' + ') : '暂停销售';
     const summaryClass = labels.length ? 'tag tag-mint' : 'tag';
 
@@ -355,11 +356,23 @@
                   <i></i>
                 </label>
               </div>
+
+              <div class="channel-card ${data.qqpay ? '' : 'is-off'}" id="qqpayCard">
+                <span class="channel-icon qq">Q</span>
+                <div class="channel-info">
+                  <strong>QQ 钱包通道</strong>
+                  <span>${data.qqpay ? '当前前台可用；需在易彩豆配置 QQ 钱包通道' : '当前已关闭，前台不显示 QQ 钱包'}</span>
+                </div>
+                <label class="switch" title="开启 / 关闭 QQ 钱包">
+                  <input type="checkbox" id="channelQqpay" ${data.qqpay ? 'checked' : ''}>
+                  <i></i>
+                </label>
+              </div>
             </div>
 
             <div class="channel-note">
               ${icon('alert', 14)}
-              <span>两个通道都关闭后，前台会进入“暂停销售”状态，客户无法下单。修改后点下方保存。</span>
+              <span>三个通道都关闭后，前台会进入“暂停销售”状态，客户无法下单。修改后点下方保存。</span>
             </div>
 
             <div class="form-actions">
@@ -376,7 +389,7 @@
             <div class="panel-body">
               <ul class="channel-help">
                 <li>支付通道掉线时，先关闭对应通道，避免客户付款失败。</li>
-                <li>微信账号被风控/频繁离线时，建议只保留支付宝。</li>
+                <li>微信/QQ 账号被风控或频繁离线时，建议关闭对应通道。</li>
                 <li>通道开关立即生效，不影响已经创建的订单。</li>
                 <li>重新开启后，前台会自动恢复对应支付方式。</li>
               </ul>
@@ -389,20 +402,24 @@
 
     const alipay = $('#channelAlipay');
     const wxpay = $('#channelWxpay');
+    const qqpay = $('#channelQqpay');
     const syncCards = () => {
       $('#alipayCard')?.classList.toggle('is-off', !alipay.checked);
       $('#wxpayCard')?.classList.toggle('is-off', !wxpay.checked);
+      $('#qqpayCard')?.classList.toggle('is-off', !qqpay.checked);
     };
     alipay.addEventListener('change', syncCards);
     wxpay.addEventListener('change', syncCards);
+    qqpay.addEventListener('change', syncCards);
 
     $('#saveChannels').addEventListener('click', async () => {
       const nextAlipay = alipay.checked;
       const nextWxpay = wxpay.checked;
-      if (!nextAlipay && !nextWxpay) {
+      const nextQqpay = qqpay.checked;
+      if (!nextAlipay && !nextWxpay && !nextQqpay) {
         const ok = await confirmDialog({
           title: '暂停销售',
-          message: '支付宝和微信都关闭后，前台会暂停销售，客户将无法下单。确定全部关闭吗？',
+          message: '支付宝、微信和 QQ 钱包都关闭后，前台会暂停销售，客户将无法下单。确定全部关闭吗？',
           confirmText: '全部关闭',
         });
         if (!ok) return;
@@ -414,9 +431,9 @@
       try {
         await api('/api/admin/payment-methods', {
           method: 'POST',
-          body: { alipay: nextAlipay, wxpay: nextWxpay },
+          body: { alipay: nextAlipay, wxpay: nextWxpay, qqpay: nextQqpay },
         });
-        toast(nextAlipay || nextWxpay ? '支付通道已更新' : '已暂停销售');
+        toast(nextAlipay || nextWxpay || nextQqpay ? '支付通道已更新' : '已暂停销售');
         await loadChannels();
       } catch (err) {
         toast(err.message || '保存失败', 'error');

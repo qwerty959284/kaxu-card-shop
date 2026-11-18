@@ -1,6 +1,6 @@
 # 卡序 KAXU · 数字卡密商城
 
-一个可直接运行、可部署的数字卡密自动发货站：前台商城、右上角管理员入口、后台**卡密售出 / 卡密补充 / 卡密管理 / 卡密创建**，以及**支付宝 + 微信支付**的易彩豆在线支付接入。
+一个可直接运行、可部署的数字卡密自动发货站：前台商城、右上角管理员入口、后台**卡密售出 / 卡密补充 / 卡密管理 / 卡密创建**，以及**支付宝 + 微信 + QQ钱包**的易彩豆在线支付接入。
 
 > **关于 GitHub Pages**
 > GitHub Pages 只能托管静态 HTML/CSS/JS，不能运行 Node 服务、SQLite 数据库和支付回调。本项目已准备 **Docker + Render Blueprint**，把代码放在 GitHub，由 Render 构建并生成 `https://xxx.onrender.com` 公网网址。详见 [DEPLOY.md](DEPLOY.md)。
@@ -61,7 +61,7 @@ node scripts/reset-admin.js ADMIN "你的新密码"
 | `PUBLIC_BASE_URL` | 否 | 对外访问地址，如 `https://shop.example.com`；Render 会自动使用 `RENDER_EXTERNAL_URL` |
 | `ADMIN_USER` | 否 | 管理员账号，默认 `ADMIN` |
 | `ADMIN_INITIAL_PASSWORD` | 首次启动必填 | 管理员初始密码，至少 8 位 |
-| `PAYMENT_METHODS` | 否 | 首次初始化时启用的支付方式，默认 `alipay,wxpay`；之后以后台「通道控制」为准 |
+| `PAYMENT_METHODS` | 否 | 首次初始化时启用的支付方式，默认 `alipay,wxpay,qqpay`；之后以后台「通道控制」为准 |
 | `EPAY_GATEWAY` | 否 | 易彩豆网关，默认 `https://pay.521cd.cn/xpay/epay` |
 | `EPAY_PID` | 是 | 易彩豆商户 ID |
 | `EPAY_KEY` | 是 | 易彩豆商户密钥，**不要提交到 Git** |
@@ -79,7 +79,7 @@ node scripts/reset-admin.js ADMIN "你的新密码"
 
 | 用途 | 接口 |
 | --- | --- |
-| 页面跳转支付（支付宝 / 微信） | `POST /xpay/epay/submit.php` |
+| 页面跳转支付（支付宝 / 微信 / QQ钱包） | `POST /xpay/epay/submit.php` |
 | 异步通知 | 本站 `/api/pay/notify`，返回 `success` |
 | 主动查单补发 | `GET /xpay/epay/api.php?act=order&...` |
 
@@ -102,7 +102,7 @@ Render 会自动使用 `RENDER_EXTERNAL_URL`；自定义服务器请设置 `PUBL
 ## 功能
 
 ### 前台
-商品分类、库存与价格、购买弹窗、支付宝/微信选择、下单锁卡、查询密码、专属订单页、支付状态轮询、卡密一键复制、订单倒计时、订单查询、联系管理员留言。
+商品分类、库存与价格、购买弹窗、支付宝/微信/QQ钱包选择、下单锁卡、查询密码、专属订单页、支付状态轮询、卡密一键复制、订单倒计时、订单查询、联系管理员留言。
 
 ### 后台
 - **卡密售出**：订单流水、状态筛选、按订单/联系方式/卡密/支付单号搜索、详情、同步支付状态、手动补单、关闭未支付订单。
@@ -110,7 +110,7 @@ Render 会自动使用 `RENDER_EXTERNAL_URL`；自定义服务器请设置 `PUBL
 - **卡密管理**：按商品/状态/关键词筛选、脱敏显示、复制、删除、批量删除、导出 CSV。
 - **卡密创建**：创建商品并导入首批卡密，支持图标、主题色、卖点、上下架、实时预览；可编辑已有商品、快捷补货、删除无订单商品。
 - **留言中心**：查看客户联系管理员的留言，标记已读/未读、删除。
-- **通道控制**：后台直接开关支付宝/微信支付，全部关闭时前台暂停销售。
+- **通道控制**：后台直接开关支付宝/微信/QQ钱包支付，全部关闭时前台暂停销售。
 
 ### 发货机制
 1. 下单时按数量把 `available` 卡密锁定为 `reserved`，订单 30 分钟有效。

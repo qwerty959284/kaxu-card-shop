@@ -21,7 +21,7 @@ export class AppError extends Error {
   }
 }
 
-const PAY_METHODS = new Set(['alipay', 'wxpay']);
+const PAY_METHODS = new Set(['alipay', 'wxpay', 'qqpay']);
 
 export function getPaymentMethods() {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'payment_methods'").get();
