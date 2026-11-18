@@ -20,7 +20,9 @@ import {
   exportCardsCsv,
   findOrderByNo,
   getClientOrder,
+  getPaymentGateway,
   getPaymentMethods,
+  getPaymentQrcode,
   handleNotify,
   listAdminOrders,
   listBatches,
@@ -30,12 +32,15 @@ import {
   lookupOrders,
   manualMarkPaid,
   markSupportMessage,
+  paymentQrcodeStatus,
   productStats,
   releaseExpiredOrders,
   restockProduct,
   resyncAdminOrder,
   serializeClientOrder,
+  setPaymentGateway,
   setPaymentMethods,
+  setPaymentQrcode,
   setProductActive,
   syncOrderWithProvider,
   updateProduct,
@@ -50,6 +55,7 @@ import {
   sessionCookie,
 } from './src/auth.js';
 import { isLocalBaseUrl, renderPaymentPage } from './src/epay.js';
+import { renderSelfhostPaymentPage } from './src/selfhost.js';
 import { clientIp, csvEscape, safeEqual, shanghaiDateKey } from './src/util.js';
 
 const MIME = {
@@ -135,8 +141,8 @@ function readBody(req, limit = 1_000_000) {
   });
 }
 
-async function readJson(req) {
-  const buf = await readBody(req);
+async function readJson(req, limit = 1_000_000) {
+  const buf = await readBody(req, limit);
   if (!buf.length) return {};
   try {
     return JSON.parse(buf.toString('utf8'));
@@ -434,8 +440,22 @@ async function handleAdminApi(req, res, url, session) {
       ok: true,
       ...selfhostConfig(),
       address: requestBaseUrl(req),
+      gateway: getPaymentGateway(),
+      qrcodes: paymentQrcodeStatus(),
       logs,
     });
+  }
+
+  if (pathname === '/api/admin/qrcode' && req.method === 'POST') {
+    const body = await readJson(req, 4_000_000);
+    const saved = setPaymentQrcode(String(body.type || ''), body.dataUrl);
+    return json(res, 200, { ok: true, ...saved });
+  }
+
+  if (pathname === '/api/admin/payment-gateway' && req.method === 'POST') {
+    const body = await readJson(req);
+    const gateway = setPaymentGateway(body.gateway);
+    return json(res, 200, { ok: true, gateway });
   }
 
   if (pathname === '/api/admin/test-payment' && req.method === 'POST') {
@@ -456,6 +476,7 @@ async function handleAdminApi(req, res, url, session) {
           key: config.selfhost.key,
           type: order.pay_type,
           money: (amountCents / 100).toFixed(2),
+          out_trade_no: order.order_no,
           trade_no: `TEST-${order.order_no}`,
           trade_status: 'TRADE_SUCCESS',
         },
@@ -467,7 +488,7 @@ async function handleAdminApi(req, res, url, session) {
       ok: mode === 'simulate' ? report.status === 200 : true,
       mode,
       orderNo: order.order_no,
-      payUrl: `${baseUrl}/pay/${order.order_no}?token=${token}`,
+      payUrl: `${baseUrl}/pay/${order.order_no}?token=${token}&gateway=selfhost`,
       orderUrl: `${baseUrl}/order/${order.order_no}?token=${token}`,
       amountCents,
       payType: order.pay_type,
@@ -763,6 +784,23 @@ const server = http.createServer(async (req, res) => {
       return json(res, result.status, result.body);
     }
 
+    const qrMatch = pathname.match(/^\/api\/qrcodes\/(wxpay|alipay|qqpay)$/);
+    if (qrMatch && req.method === 'GET') {
+      const dataUrl = getPaymentQrcode(qrMatch[1]);
+      const match = /^data:(image\/(?:png|jpeg|webp));base64,(.+)$/.exec(dataUrl);
+      if (!match) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end('not found');
+      }
+      const body = Buffer.from(match[2], 'base64');
+      res.writeHead(200, {
+        'Content-Type': match[1],
+        'Content-Length': body.length,
+        'Cache-Control': 'no-store',
+      });
+      return res.end(body);
+    }
+
     if (pathname.startsWith('/api/')) {
       await handleApi(req, res, url);
       return;
@@ -783,11 +821,19 @@ const server = http.createServer(async (req, res) => {
     }
     const payMatch = pathname.match(/^\/pay\/([A-Z0-9]+)$/);
     if (payMatch && req.method === 'GET') {
-      if (!config.epay.key) {
+      const gateway = url.searchParams.get('gateway') === 'epay' ? 'epay' : url.searchParams.get('gateway') === 'selfhost' ? 'selfhost' : getPaymentGateway();
+      if (gateway === 'epay' && !config.epay.key) {
         return html(
           res,
           503,
           '<div style="font-family:sans-serif;padding:48px;background:#070b10;color:#eee;min-height:100vh"><h1>支付通道未配置</h1><p>管理员尚未配置 EPAY_KEY，暂时无法发起支付。</p><a style="color:#6ff2bf" href="/">返回首页</a></div>',
+        );
+      }
+      if (gateway === 'selfhost' && !config.selfhost.key) {
+        return html(
+          res,
+          503,
+          '<div style="font-family:sans-serif;padding:48px;background:#070b10;color:#eee;min-height:100vh"><h1>自建支付未配置</h1><p>管理员尚未配置 SELFHOST_KEY，暂时无法发起支付。</p><a style="color:#6ff2bf" href="/">返回首页</a></div>',
         );
       }
       const token = url.searchParams.get('token') || '';
@@ -807,6 +853,16 @@ const server = http.createServer(async (req, res) => {
         releaseExpiredOrders();
         res.writeHead(302, { Location: `/order/${order.order_no}?token=${encodeURIComponent(order.access_token)}` });
         return res.end();
+      }
+      if (gateway === 'selfhost') {
+        return html(
+          res,
+          200,
+          renderSelfhostPaymentPage(order, {
+            payType,
+            qrcodes: paymentQrcodeStatus(),
+          }),
+        );
       }
       return html(
         res,

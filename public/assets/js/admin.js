@@ -371,7 +371,7 @@
                 <span class="channel-icon qq">Q</span>
                 <div class="channel-info">
                   <strong>QQ 钱包通道</strong>
-                  <span>${data.qqpay ? '当前前台可用；需在易彩豆配置 QQ 钱包通道' : '当前已关闭，前台不显示 QQ 钱包'}</span>
+                  <span>${data.qqpay ? '当前前台可用；需先在自建支付上传 QQ 收款码' : '当前已关闭，前台不显示 QQ 钱包'}</span>
                 </div>
                 <label class="switch" title="开启 / 关闭 QQ 钱包">
                   <input type="checkbox" id="channelQqpay" ${data.qqpay ? 'checked' : ''}>
@@ -458,6 +458,20 @@
   async function loadSelfhost() {
     const data = await api('/api/admin/selfhost');
     const logs = data.logs || [];
+    const qrcodes = data.qrcodes || [];
+    const qrTiles = qrcodes
+      .map(
+        (item) => `
+          <div class="qr-tile">
+            <div class="qr-preview${item.has ? '' : ' is-empty'}">
+              ${item.has ? `<img src="/api/qrcodes/${item.type}?t=${Date.now()}" alt="${esc(item.name)}收款码">` : '<span>未上传</span>'}
+            </div>
+            <strong>${esc(item.name)}</strong>
+            <button class="btn btn-ghost btn-sm" type="button" data-upload="${item.type}">${item.has ? '更换收款码' : '上传收款码'}</button>
+            <input type="file" accept="image/png,image/jpeg,image/webp" data-file="${item.type}" hidden>
+          </div>`,
+      )
+      .join('');
     const rows = logs.length
       ? logs
           .map(
@@ -513,6 +527,27 @@
           <section class="panel">
             <div class="panel-head">
               <div>
+                <div class="panel-title">${icon('wallet', 15)} 收款码</div>
+                <div class="panel-sub">买家在支付页看到的个人收款码，对应金额由订单决定</div>
+              </div>
+              <span class="${qrcodes.some((item) => item.has) ? 'tag tag-mint' : 'tag'}">${qrcodes.some((item) => item.has) ? '已配置' : '待上传'}</span>
+            </div>
+            <div class="qr-grid">${qrTiles}</div>
+            <div class="selfhost-gateway">
+              <label class="field">
+                <span class="field-label">当前支付通道</span>
+                <select class="select" id="paymentGateway">
+                  <option value="selfhost"${data.gateway === 'selfhost' ? ' selected' : ''}>自建收款码（推荐）</option>
+                  <option value="epay"${data.gateway === 'epay' ? ' selected' : ''}>易彩豆收银台</option>
+                </select>
+              </label>
+              <p class="form-hint">${icon('alert', 14)} 自建模式下，前台和测试支付都会打开商城自己的收款码页，不再跳转易彩豆。请先上传至少一个收款码。</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
                 <div class="panel-title">${icon('clock', 15)} 最近请求</div>
                 <div class="panel-sub">监控软件查单、上报收款都会记录在这里</div>
               </div>
@@ -535,6 +570,62 @@
       toast(ok ? '三项配置已复制' : '复制失败，请手动选择复制', ok ? 'success' : 'error');
     });
     $('#refreshSelfhost')?.addEventListener('click', () => loadSelfhost());
+
+    content.querySelectorAll('[data-upload]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = content.querySelector(`[data-file="${btn.dataset.upload}"]`);
+        input?.click();
+      });
+    });
+
+    content.querySelectorAll('[data-file]').forEach((input) => {
+      input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) {
+          toast('图片不能超过 2MB，请压缩后再上传', 'error');
+          input.value = '';
+          return;
+        }
+        const type = input.dataset.file;
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const btn = content.querySelector(`[data-upload="${type}"]`);
+          if (btn) btn.disabled = true;
+          try {
+            await api('/api/admin/qrcode', {
+              method: 'POST',
+              body: { type, dataUrl: reader.result },
+            });
+            toast('收款码已保存', 'success');
+            await loadSelfhost();
+          } catch (err) {
+            toast(err.message || '上传失败，请重试', 'error');
+            if (btn) btn.disabled = false;
+          } finally {
+            input.value = '';
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+
+    $('#paymentGateway')?.addEventListener('change', async (event) => {
+      const select = event.currentTarget;
+      select.disabled = true;
+      try {
+        await api('/api/admin/payment-gateway', {
+          method: 'POST',
+          body: { gateway: select.value },
+        });
+        toast(select.value === 'selfhost' ? '已切换为自建收款码' : '已切换为易彩豆收银台', 'success');
+      } catch (err) {
+        toast(err.message || '切换失败', 'error');
+        await loadSelfhost();
+      } finally {
+        select.disabled = false;
+      }
+    });
   }
 
   /* ============================== 测试支付 ============================== */

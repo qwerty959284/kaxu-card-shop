@@ -6,6 +6,156 @@ import { confirmSelfhostPayment, findOrderByNo } from './shop.js';
 
 const PAY_TYPES = new Set(['alipay', 'wxpay', 'qqpay']);
 
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const PAY_NAMES = { wxpay: '微信', alipay: '支付宝', qqpay: 'QQ 钱包' };
+
+export function renderSelfhostPaymentPage(order, { payType, qrcodes = [] } = {}) {
+  const types = ['wxpay', 'alipay', 'qqpay'];
+  const available = new Set(qrcodes.filter((item) => item.has).map((item) => item.type));
+  const requested = types.includes(payType) ? payType : 'wxpay';
+  const selected = requested;
+  const amount = centsToMoney(order.amount_cents);
+  const orderUrl = `/order/${order.order_no}?token=${encodeURIComponent(order.access_token)}`;
+  const buttons = types
+    .map((type) => {
+      const isCurrent = type === selected;
+      const enabled = isCurrent && available.has(type);
+      const title = enabled
+        ? ''
+        : (isCurrent ? '该方式还未上传收款码' : `订单指定支付方式为${PAY_NAMES[selected]}`);
+      return `<button type="button" class="selfpay-tab${isCurrent ? ' is-active' : ''}${available.has(type) ? '' : ' is-empty'}" data-type="${type}"${enabled ? '' : ' disabled'}${title ? ` title="${title}"` : ''}>${PAY_NAMES[type]}</button>`;
+    })
+    .join('');
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>支付订单 · ${escapeHtml(config.site.name)}</title>
+  <style>
+    :root { color-scheme: dark; --mint:#6ff2bf; --line:rgba(255,255,255,.1); --muted:#8b9aa8; }
+    * { box-sizing: border-box; }
+    body { margin:0; min-height:100vh; display:grid; place-items:center; padding:24px; background:radial-gradient(900px 600px at 50% -10%, rgba(111,242,191,.08), transparent 60%), #070b10; color:#eaf2f0; font-family:Inter,"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif; }
+    .selfpay-card { width:min(420px,100%); padding:28px; border:1px solid var(--line); border-radius:20px; background:linear-gradient(180deg,#111a22,#0b1117); box-shadow:0 24px 70px rgba(0,0,0,.45); }
+    .selfpay-head { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--muted); font-size:11px; }
+    .selfpay-head b { color:#dff8ef; font-weight:600; letter-spacing:.04em; }
+    .selfpay-amount { margin:22px 0 4px; font-size:38px; font-weight:700; letter-spacing:-.03em; }
+    .selfpay-sub { margin:0; color:var(--muted); font-size:11.5px; line-height:1.6; }
+    .selfpay-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:20px 0 16px; }
+    .selfpay-tab { padding:10px 6px; border:1px solid var(--line); border-radius:10px; background:transparent; color:#aab8c4; font:inherit; font-size:11px; cursor:pointer; }
+    .selfpay-tab.is-active { border-color:rgba(111,242,191,.5); background:rgba(111,242,191,.08); color:var(--mint); }
+    .selfpay-tab.is-empty { opacity:.45; }
+    .selfpay-tab:disabled { cursor:not-allowed; }
+    .selfpay-qr { position:relative; display:grid; place-items:center; min-height:236px; padding:14px; border:1px solid var(--line); border-radius:14px; background:#fff; }
+    .selfpay-qr img { display:block; width:min(240px,100%); height:auto; }
+    .selfpay-empty { display:none; padding:18px; color:#5c6672; font-size:12px; text-align:center; line-height:1.7; }
+    .selfpay-qr.is-empty img { display:none; }
+    .selfpay-qr.is-empty .selfpay-empty { display:block; }
+    .selfpay-note { margin:14px 0 0; color:var(--muted); font-size:10.5px; line-height:1.7; text-align:center; }
+    .selfpay-status { display:flex; align-items:center; justify-content:center; gap:7px; margin-top:16px; color:#cfe7df; font-size:11px; }
+    .selfpay-dot { width:6px; height:6px; border-radius:50%; background:var(--mint); box-shadow:0 0 0 4px rgba(111,242,191,.12); animation:pulse 1.8s ease-in-out infinite; }
+    .selfpay-actions { display:flex; gap:8px; margin-top:16px; }
+    .selfpay-actions a, .selfpay-actions button { flex:1; display:inline-flex; align-items:center; justify-content:center; min-height:40px; border:1px solid var(--line); border-radius:10px; background:transparent; color:#cfe7df; font:inherit; font-size:11.5px; text-decoration:none; cursor:pointer; }
+    .selfpay-actions button { border-color:rgba(111,242,191,.35); background:rgba(111,242,191,.08); color:var(--mint); }
+    .selfpay-error { margin-top:14px; padding:10px 12px; border:1px solid rgba(255,122,133,.25); border-radius:9px; background:rgba(255,122,133,.06); color:#ff9ca4; font-size:11px; line-height:1.6; display:none; }
+    @keyframes pulse { 50% { opacity:.35; } }
+    @media (max-width:480px) { body { padding:14px; } .selfpay-card { padding:20px; } .selfpay-amount { font-size:32px; } }
+  </style>
+</head>
+<body>
+  <main class="selfpay-card">
+    <div class="selfpay-head"><b>${escapeHtml(config.site.name)} · 订单支付</b><span>${escapeHtml(order.order_no)}</span></div>
+    <div class="selfpay-amount">¥${escapeHtml(amount)}</div>
+    <p class="selfpay-sub" id="selfpaySub">请使用 ${PAY_NAMES[selected]} 扫码支付，付款金额必须与上方金额一致。</p>
+    <div class="selfpay-tabs">${buttons}</div>
+    <div class="selfpay-qr${available.has(selected) ? '' : ' is-empty'}" id="selfpayQr">
+      <img id="selfpayImage" src="/api/qrcodes/${selected}" alt="${PAY_NAMES[selected]}收款码">
+      <div class="selfpay-empty">该支付方式还未上传收款码，请联系管理员；或返回商店重新选择支付方式下单。</div>
+    </div>
+    <p class="selfpay-note">付款后系统会自动确认，通常 3 - 10 秒到账；请勿关闭本页。金额不一致会导致无法自动发货。</p>
+    <div class="selfpay-status"><span class="selfpay-dot"></span><span id="selfpayStatus">正在等待到账…</span></div>
+    <div class="selfpay-actions">
+      <button type="button" id="selfpayCheck">我已完成支付</button>
+      <a href="${escapeHtml(orderUrl)}">查看订单</a>
+    </div>
+    <div class="selfpay-error" id="selfpayError"></div>
+  </main>
+<script>
+  var orderNo = ${JSON.stringify(order.order_no)};
+  var orderToken = ${JSON.stringify(order.access_token)};
+  var orderUrl = ${JSON.stringify(orderUrl)};
+  var names = { wxpay: '微信', alipay: '支付宝', qqpay: 'QQ 钱包' };
+  var hasQr = ${JSON.stringify(Object.fromEntries(types.map((type) => [type, available.has(type)])))};
+  var current = ${JSON.stringify(selected)};
+  var qr = document.getElementById('selfpayQr');
+  var image = document.getElementById('selfpayImage');
+  var sub = document.getElementById('selfpaySub');
+  var statusEl = document.getElementById('selfpayStatus');
+  var errorEl = document.getElementById('selfpayError');
+  var finished = false;
+
+  function select(type) {
+    if (!hasQr[type]) return;
+    current = type;
+    document.querySelectorAll('.selfpay-tab').forEach(function (btn) {
+      btn.classList.toggle('is-active', btn.getAttribute('data-type') === type);
+    });
+    image.src = '/api/qrcodes/' + type + '?t=' + Date.now();
+    image.alt = names[type] + '收款码';
+    qr.classList.remove('is-empty');
+    sub.textContent = '请使用 ' + names[type] + ' 扫码支付，付款金额必须与上方金额一致。';
+  }
+
+  document.querySelectorAll('.selfpay-tab').forEach(function (btn) {
+    btn.addEventListener('click', function () { select(btn.getAttribute('data-type')); });
+  });
+
+  function finish(message) {
+    if (finished) return;
+    finished = true;
+    statusEl.textContent = message;
+    setTimeout(function () { location.href = orderUrl; }, 900);
+  }
+
+  async function check() {
+    if (finished) return;
+    try {
+      var res = await fetch('/api/orders/' + orderNo + '?token=' + encodeURIComponent(orderToken), { headers: { Accept: 'application/json' } });
+      var data = await res.json();
+      if (data.order && data.order.status === 'delivered') { finish('支付成功，正在跳转订单页…'); return; }
+      if (data.order && (data.order.status === 'closed' || data.order.status === 'cancelled')) { finish('订单已关闭，正在返回订单页…'); return; }
+      statusEl.textContent = '正在等待到账…';
+    } catch (err) {
+      statusEl.textContent = '网络波动，正在重试…';
+    }
+  }
+
+  document.getElementById('selfpayCheck').addEventListener('click', async function () {
+    errorEl.style.display = 'none';
+    await check();
+    if (!finished) {
+      errorEl.textContent = '还没有收到付款，请确认金额一致、收款码正确，稍等几秒再试。';
+      errorEl.style.display = 'block';
+    }
+  });
+
+  check();
+  setInterval(check, 3000);
+</script>
+</body>
+</html>`;
+}
+
+
 export function selfhostSign(params, key = config.selfhost.key) {
   const pairs = Object.entries(params)
     .filter(([k, v]) => k !== 'sign' && k !== 'sign_type' && v !== '' && v !== null && v !== undefined)

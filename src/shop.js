@@ -44,6 +44,56 @@ export function setPaymentMethods(methods) {
   return clean;
 }
 
+const QR_TYPES = ['wxpay', 'alipay', 'qqpay'];
+const QR_NAMES = { wxpay: '微信', alipay: '支付宝', qqpay: 'QQ 钱包' };
+
+export function getPaymentGateway() {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'payment_gateway'").get();
+  if (row && (row.value === 'selfhost' || row.value === 'epay')) return row.value;
+  const hasQrcode = QR_TYPES.some((type) => Boolean(getPaymentQrcode(type)));
+  return config.selfhost.key && hasQrcode ? 'selfhost' : 'epay';
+}
+
+export function setPaymentGateway(value) {
+  const gateway = value === 'epay' ? 'epay' : 'selfhost';
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES ('payment_gateway', ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run(gateway);
+  return gateway;
+}
+
+export function getPaymentQrcode(type) {
+  if (!QR_TYPES.includes(type)) return '';
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(`qrcode_${type}`);
+  return row?.value || '';
+}
+
+export function setPaymentQrcode(type, dataUrl) {
+  if (!QR_TYPES.includes(type)) throw new AppError('不支持的收款码类型', 400, 'INVALID_QR_TYPE');
+  const raw = String(dataUrl || '').trim();
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=\s]+)$/.exec(raw);
+  if (!match) throw new AppError('请上传 PNG / JPG / WebP 图片', 400, 'INVALID_QR_IMAGE');
+  const bytes = Buffer.from(match[2].replace(/\s+/g, ''), 'base64');
+  if (bytes.length < 100) throw new AppError('图片内容无效，请重新选择', 400, 'INVALID_QR_IMAGE');
+  if (bytes.length > 2 * 1024 * 1024) throw new AppError('收款码图片不能超过 2MB', 413, 'QR_TOO_LARGE');
+  const normalized = `data:${match[1]};base64,${bytes.toString('base64')}`;
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run(`qrcode_${type}`, normalized);
+  return { type, name: QR_NAMES[type], bytes: bytes.length };
+}
+
+export function paymentQrcodeStatus() {
+  return QR_TYPES.map((type) => ({
+    type,
+    name: QR_NAMES[type],
+    has: Boolean(getPaymentQrcode(type)),
+  }));
+}
+
+
 const ICONS = new Set(['card', 'play', 'game', 'bolt', 'book', 'music', 'cloud', 'star', 'gift']);
 const ACCENTS = new Set(['mint', 'violet', 'amber', 'blue', 'rose', 'cyan']);
 
