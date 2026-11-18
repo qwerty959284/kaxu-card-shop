@@ -44,6 +44,43 @@ export function setPaymentMethods(methods) {
   return clean;
 }
 
+const EMPTY_ANNOUNCEMENT = { enabled: false, title: '', content: '', updatedAt: null };
+
+export function getAnnouncement() {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'announcement'").get();
+  if (!row) return { ...EMPTY_ANNOUNCEMENT };
+  try {
+    const parsed = JSON.parse(row.value);
+    return {
+      enabled: Boolean(parsed.enabled),
+      title: String(parsed.title || ''),
+      content: String(parsed.content || ''),
+      updatedAt: parsed.updatedAt || null,
+    };
+  } catch {
+    return { ...EMPTY_ANNOUNCEMENT };
+  }
+}
+
+export function setAnnouncement({ title, content, enabled }) {
+  const cleanTitle = String(title || '').trim().slice(0, 80);
+  const cleanContent = String(content || '').trim().slice(0, 2000);
+  const active = Boolean(enabled);
+  if (active && !cleanTitle) throw new AppError('请填写公告标题', 400);
+  if (active && !cleanContent) throw new AppError('请填写公告内容', 400);
+  const value = {
+    enabled: active,
+    title: cleanTitle,
+    content: cleanContent,
+    updatedAt: nowIso(),
+  };
+  db.prepare(
+    `INSERT INTO settings (key, value) VALUES ('announcement', ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+  ).run(JSON.stringify(value));
+  return value;
+}
+
 const QR_TYPES = ['wxpay', 'alipay', 'qqpay'];
 const QR_NAMES = { wxpay: '微信', alipay: '支付宝', qqpay: 'QQ 钱包' };
 

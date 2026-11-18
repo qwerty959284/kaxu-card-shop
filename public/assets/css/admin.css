@@ -2883,3 +2883,110 @@ body.admin-body {
     padding-top: 28px;
   }
 }
+
+/* ============================== 公告 ============================== */
+
+.announce-admin {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.announce-admin .panel {
+  padding: 22px;
+}
+
+.announce-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+  cursor: pointer;
+}
+
+.announce-toggle input {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--mint);
+  flex-shrink: 0;
+}
+
+.announce-toggle strong {
+  display: block;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.announce-toggle small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted-2);
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.announce-preview-panel {
+  position: sticky;
+  top: 18px;
+}
+
+.announce-preview-card {
+  margin-top: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 16px;
+  background: linear-gradient(180deg, #121a23 0%, #0c1219 100%);
+  box-shadow: var(--shadow);
+}
+
+.announce-preview-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.announce-preview-card h3 {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.announce-preview-card p {
+  margin: 12px 0 18px;
+  max-height: 220px;
+  overflow: auto;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.announce-preview-card .btn-block {
+  margin-top: 0;
+}
+
+@media (max-width: 980px) {
+  .announce-admin {
+    grid-template-columns: 1fr;
+  }
+
+  .announce-preview-panel {
+    position: static;
+  }
+}

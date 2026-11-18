@@ -23,6 +23,7 @@ import {
   getPaymentGateway,
   getPaymentMethods,
   getPaymentQrcode,
+  getAnnouncement,
   handleNotify,
   listAdminOrders,
   listBatches,
@@ -41,6 +42,7 @@ import {
   setPaymentGateway,
   setPaymentMethods,
   setPaymentQrcode,
+  setAnnouncement,
   setProductActive,
   syncOrderWithProvider,
   updateProduct,
@@ -263,6 +265,15 @@ async function handleApi(req, res, url) {
     });
   }
 
+  if (pathname === '/api/announcement' && req.method === 'GET') {
+    const announcement = getAnnouncement();
+    const visible = announcement.enabled && announcement.title && announcement.content;
+    return json(res, 200, {
+      ok: true,
+      announcement: visible ? announcement : null,
+    });
+  }
+
   if (pathname === '/api/store' && req.method === 'GET') {
     const methods = getPaymentMethods();
     return json(res, 200, {
@@ -444,6 +455,20 @@ async function handleAdminApi(req, res, url, session) {
       qrcodes: paymentQrcodeStatus(),
       logs,
     });
+  }
+
+  if (pathname === '/api/admin/announcement' && req.method === 'GET') {
+    return json(res, 200, { ok: true, announcement: getAnnouncement() });
+  }
+
+  if (pathname === '/api/admin/announcement' && req.method === 'POST') {
+    const body = await readJson(req);
+    const announcement = setAnnouncement({
+      title: body.title,
+      content: body.content,
+      enabled: body.enabled,
+    });
+    return json(res, 200, { ok: true, announcement });
   }
 
   if (pathname === '/api/admin/qrcode' && req.method === 'POST') {

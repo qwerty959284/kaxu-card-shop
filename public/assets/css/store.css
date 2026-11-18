@@ -1,5 +1,5 @@
-/* ============================================================
-   卡序 KAXU · 商城前台
+﻿/* ============================================================
+   鍗″簭 KAXU 路 鍟嗗煄鍓嶅彴
    ============================================================ */
 
 body.store-page {
@@ -14,7 +14,7 @@ section[id] {
   scroll-margin-top: 88px;
 }
 
-/* ============================== 顶部导航 ============================== */
+/* ============================== 椤堕儴瀵艰埅 ============================== */
 
 .site-header {
   position: fixed;
@@ -265,7 +265,7 @@ section[id] {
   font-size: 11px;
 }
 
-/* ---------- Hero 右侧票据 ---------- */
+/* ---------- Hero 鍙充晶绁ㄦ嵁 ---------- */
 
 .hero-visual {
   position: relative;
@@ -554,7 +554,7 @@ section[id] {
   }
 }
 
-/* ============================== 跑马灯 ============================== */
+/* ============================== 璺戦┈鐏?============================== */
 
 .trust-marquee {
   position: relative;
@@ -602,7 +602,7 @@ section[id] {
   }
 }
 
-/* ============================== 商品区 ============================== */
+/* ============================== 鍟嗗搧鍖?============================== */
 
 .products-section {
   padding-top: 92px;
@@ -930,7 +930,7 @@ section[id] {
   height: 13px;
 }
 
-/* ============================== 购买流程 ============================== */
+/* ============================== 璐拱娴佺▼ ============================== */
 
 .how-section {
   border-top: 1px solid var(--line);
@@ -1006,7 +1006,7 @@ section[id] {
   letter-spacing: 0.1em;
 }
 
-/* ============================== 保障 ============================== */
+/* ============================== 淇濋殰 ============================== */
 
 .assurance-section {
   padding-top: 0;
@@ -1109,7 +1109,7 @@ section[id] {
   white-space: nowrap;
 }
 
-/* 首页“订单遇到问题”入口：整块可点击，直接打开留言弹窗 */
+/* 棣栭〉鈥滆鍗曢亣鍒伴棶棰樷€濆叆鍙ｏ細鏁村潡鍙偣鍑伙紝鐩存帴鎵撳紑鐣欒█寮圭獥 */
 .support-card.support-entry {
   width: 100%;
   padding: 28px;
@@ -1308,7 +1308,7 @@ section[id] {
   color: var(--mint);
 }
 
-/* ============================== CTA / 页脚 ============================== */
+/* ============================== CTA / 椤佃剼 ============================== */
 
 .cta-section {
   padding-bottom: 96px;
@@ -1441,7 +1441,7 @@ section[id] {
   height: 12px;
 }
 
-/* ============================== 购买弹窗 ============================== */
+/* ============================== 璐拱寮圭獥 ============================== */
 
 .purchase-card {
   width: min(548px, 100%);
@@ -1769,7 +1769,7 @@ section[id] {
   flex-shrink: 0;
 }
 
-/* ============================== 订单页 ============================== */
+/* ============================== 璁㈠崟椤?============================== */
 
 body.order-page {
   background:
@@ -2257,7 +2257,7 @@ body.order-page {
   line-height: 1.7;
 }
 
-/* ============================== 订单查询 ============================== */
+/* ============================== 璁㈠崟鏌ヨ ============================== */
 
 .query-page .order-wrap {
   padding-top: 54px;
@@ -2447,7 +2447,7 @@ body.order-page {
   padding: 20px;
 }
 
-/* ============================== 联系管理员 ============================== */
+/* ============================== 鑱旂郴绠＄悊鍛?============================== */
 
 .support-modal {
   width: min(520px, 100%);
@@ -2570,7 +2570,7 @@ body.order-page {
   }
 }
 
-/* ============================== 支付跳转页 ============================== */
+/* ============================== 鏀粯璺宠浆椤?============================== */
 
 body.pay-redirect-page {
   display: grid;
@@ -2625,7 +2625,7 @@ body.pay-redirect-page {
   line-height: 1.7;
 }
 
-/* ============================== 进场动画 ============================== */
+/* ============================== 杩涘満鍔ㄧ敾 ============================== */
 
 .reveal {
   opacity: 0;
@@ -2638,7 +2638,7 @@ body.pay-redirect-page {
   transform: translateY(0);
 }
 
-/* ============================== 响应式 ============================== */
+/* ============================== 鍝嶅簲寮?============================== */
 
 @media (max-width: 1080px) {
   .nav-links {
@@ -3007,4 +3007,109 @@ body.pay-redirect-page {
   .order-header .nav-back span {
     display: none;
   }
+}
+
+/* ============================== 棣栭〉鍏憡 ============================== */
+
+.announce-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(2, 5, 8, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: fade-in 0.2s ease both;
+}
+
+.announce-backdrop.is-closing {
+  animation: announce-out 0.18s ease both;
+}
+
+.announce-card {
+  width: min(480px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  border-radius: 18px;
+  background: linear-gradient(180deg, #121a23 0%, #0c1219 100%);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: pop-in 0.3s var(--ease) both;
+}
+
+.announce-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.announce-card h2 {
+  margin: 14px 0 0;
+  color: var(--text);
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.announce-body {
+  margin-top: 14px;
+  max-height: 46vh;
+  overflow: auto;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.announce-foot {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.announce-tip {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted-2);
+  font-size: 10.5px;
+  text-align: center;
+}
+
+.announce-close:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+body.announce-open {
+  overflow: hidden;
+}
+
+@media (max-width: 620px) {
+  .announce-backdrop {
+    padding: 16px;
+  }
+
+  .announce-card {
+    padding: 22px;
+    border-radius: 16px;
+  }
+
+  .announce-card h2 {
+    font-size: 19px;
+  }
+}
+
+@keyframes announce-out {
+  to { opacity: 0; }
 }

@@ -57,6 +57,11 @@
       subtitle: '随时开关支付宝 / 微信支付通道。',
       load: loadChannels,
     },
+    announcements: {
+      title: '公告',
+      subtitle: '发布首页弹窗公告，访客每次打开都会看到。',
+      load: loadAnnouncement,
+    },
     selfhost: {
       title: '自建支付',
       subtitle: '自挂监控软件的商户接口与最近请求。',
@@ -629,6 +634,106 @@
   }
 
   /* ============================== 测试支付 ============================== */
+
+  async function loadAnnouncement() {
+    const data = await api('/api/admin/announcement');
+    const item = data.announcement || {};
+    const enabled = Boolean(item.enabled);
+
+    content.innerHTML = `
+      <div class="view-enter">
+        <div class="announce-admin">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">${icon('bell', 15)} 首页公告</div>
+                <div class="panel-sub">发布后，访客每次打开首页都会看到弹窗</div>
+              </div>
+              <span class="tag ${enabled ? 'tag-mint' : ''}">${enabled ? '已发布' : '未发布'}</span>
+            </div>
+            <form class="create-form" id="annForm" novalidate>
+              <label class="field">
+                <span class="field-label">公告标题</span>
+                <input class="input" id="annTitle" type="text" maxlength="80" value="${esc(item.title || '')}" placeholder="例如：国庆发货安排" required>
+              </label>
+              <label class="field" style="margin-top:14px">
+                <span class="field-label">公告内容 <small style="float:right;color:var(--muted-2)">最多 2000 字</small></span>
+                <textarea class="textarea" id="annContent" maxlength="2000" rows="8" placeholder="填写公告正文，支持换行。" required>${esc(item.content || '')}</textarea>
+              </label>
+              <label class="announce-toggle">
+                <input type="checkbox" id="annEnabled"${enabled ? ' checked' : ''}>
+                <span>
+                  <strong>启用公告</strong>
+                  <small>关闭后首页不再弹出，已填写内容会保留</small>
+                </span>
+              </label>
+              <p class="form-hint">${icon('info', 14)} 公告弹窗出现 3 秒后才能关闭；访客每次打开首页都会重新看到。</p>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit" id="annSave">${icon('check', 15)} ${enabled ? '保存并发布' : '保存公告'}</button>
+              </div>
+            </form>
+          </section>
+
+          <aside class="panel announce-preview-panel">
+            <div class="panel-title">弹窗预览</div>
+            <div class="announce-preview-card">
+              <span class="announce-preview-eyebrow">${icon('bell', 14)} 站点公告</span>
+              <h3 id="annPreviewTitle">${esc(item.title || '公告标题')}</h3>
+              <p id="annPreviewContent">${esc(item.content || '公告内容会显示在这里。')}</p>
+              <button class="btn btn-primary btn-block" type="button" disabled>3 秒后可关闭</button>
+            </div>
+          </aside>
+        </div>
+      </div>`;
+
+    hydrateIcons(content);
+
+    const titleInput = document.querySelector('#annTitle');
+    const contentInput = document.querySelector('#annContent');
+    const enabledInput = document.querySelector('#annEnabled');
+    const previewTitle = document.querySelector('#annPreviewTitle');
+    const previewContent = document.querySelector('#annPreviewContent');
+    const save = document.querySelector('#annSave');
+
+    const updatePreview = () => {
+      previewTitle.textContent = titleInput.value.trim() || '公告标题';
+      previewContent.textContent = contentInput.value.trim() || '公告内容会显示在这里。';
+    };
+    titleInput?.addEventListener('input', updatePreview);
+    contentInput?.addEventListener('input', updatePreview);
+    enabledInput?.addEventListener('change', () => {
+      save.innerHTML = `${icon('check', 15)} ${enabledInput.checked ? '保存并发布' : '保存公告'}`;
+    });
+
+    document.querySelector('#annForm')?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const title = titleInput.value.trim();
+      const body = contentInput.value.trim();
+      const active = enabledInput.checked;
+      if (active && !title) {
+        toast('启用公告前请填写标题', 'error');
+        titleInput.focus();
+        return;
+      }
+      if (active && !body) {
+        toast('启用公告前请填写内容', 'error');
+        contentInput.focus();
+        return;
+      }
+      save.disabled = true;
+      try {
+        await api('/api/admin/announcement', {
+          method: 'POST',
+          body: { title, content: body, enabled: active },
+        });
+        toast(active ? '公告已发布' : '公告已保存（未启用）', 'success');
+        await loadAnnouncement();
+      } catch (err) {
+        toast(err.message || '保存失败，请重试', 'error');
+        save.disabled = false;
+      }
+    });
+  }
 
   async function loadTestPay() {
     content.innerHTML = `
