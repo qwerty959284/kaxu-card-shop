@@ -1109,6 +1109,51 @@ section[id] {
   white-space: nowrap;
 }
 
+/* 首页“订单遇到问题”入口：整块可点击，直接打开留言弹窗 */
+.support-card.support-entry {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.support-card.support-entry:hover {
+  border-color: rgba(111, 242, 191, 0.34);
+  background: rgba(111, 242, 191, 0.045);
+}
+
+.support-card.support-entry:active {
+  transform: translateY(1px);
+}
+
+.support-card.support-entry:focus-visible {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
+.support-card .support-entry-copy {
+  display: block;
+  min-width: 0;
+  margin-top: 0;
+  color: inherit;
+  font-size: inherit;
+}
+
+.support-card .support-entry-arrow {
+  display: grid;
+  place-items: center;
+  margin-top: 0;
+  color: var(--muted-2);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.support-card.support-entry:hover .support-entry-arrow {
+  color: var(--mint);
+  transform: translateX(2px);
+}
+
 .assurance-list {
   position: relative;
   z-index: 1;
