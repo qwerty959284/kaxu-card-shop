@@ -62,6 +62,11 @@
       subtitle: '自挂监控软件的商户接口与最近请求。',
       load: loadSelfhost,
     },
+    testpay: {
+      title: '测试支付',
+      subtitle: '不用真实付款，模拟一笔自建支付回调。',
+      load: loadTestPay,
+    },
   };
 
   const state = {
@@ -530,6 +535,104 @@
       toast(ok ? '三项配置已复制' : '复制失败，请手动选择复制', ok ? 'success' : 'error');
     });
     $('#refreshSelfhost')?.addEventListener('click', () => loadSelfhost());
+  }
+
+  /* ============================== 测试支付 ============================== */
+
+  async function loadTestPay() {
+    content.innerHTML = `
+      <div class="view-enter">
+        <div class="testpay-wrap">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">${icon('bolt', 15)} 模拟一笔支付</div>
+                <div class="panel-sub">创建隐藏测试订单，再模拟监控软件上报，验证自动发货链路</div>
+              </div>
+              <span class="tag tag-mint">不扣真实余额</span>
+            </div>
+            <form class="create-form" id="testPayForm" novalidate>
+              <div class="form-grid">
+                <label class="field">
+                  <span class="field-label">测试金额（元）</span>
+                  <input class="input" id="testPayAmount" type="number" min="0.01" max="1000" step="0.01" value="0.01" required>
+                </label>
+                <label class="field">
+                  <span class="field-label">支付方式</span>
+                  <select class="select" id="testPayType">
+                    <option value="wxpay">微信支付</option>
+                    <option value="alipay">支付宝</option>
+                    <option value="qqpay">QQ 钱包</option>
+                  </select>
+                </label>
+              </div>
+              <p class="form-hint">${icon('alert', 14)} 会生成一笔「支付测试」隐藏订单并自动标记为已支付，不会出现在前台商品里；测试卡密仅用于验证发货。</p>
+              <div class="form-actions">
+                <button class="btn btn-primary" type="submit" id="testPaySubmit">
+                  ${icon('bolt', 15)} 模拟支付并自动发货
+                </button>
+              </div>
+            </form>
+            <div class="testpay-result" id="testPayResult" hidden></div>
+          </section>
+        </div>
+      </div>`;
+
+    hydrateIcons(content);
+
+    const form = document.querySelector('#testPayForm');
+    const amountInput = document.querySelector('#testPayAmount');
+    const typeInput = document.querySelector('#testPayType');
+    const submit = document.querySelector('#testPaySubmit');
+    const box = document.querySelector('#testPayResult');
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const amount = Number(amountInput.value);
+      if (!Number.isFinite(amount) || amount < 0.01 || amount > 1000) {
+        toast('测试金额需在 0.01 - 1000 元之间', 'error');
+        amountInput.focus();
+        return;
+      }
+
+      submit.disabled = true;
+      const original = submit.innerHTML;
+      submit.textContent = '处理中…';
+      box.hidden = true;
+
+      try {
+        const data = await api('/api/admin/test-payment', {
+          method: 'POST',
+          body: { amount, payType: typeInput.value },
+        });
+        const ok = Boolean(data.ok);
+        const rawMessage = (data.result && (data.result.msg || data.result.message)) || '';
+        const message = ok
+          ? '自建网关已确认收款，测试卡密已发放。'
+          : rawMessage || '模拟上报未通过，请查看自建支付日志。';
+        box.hidden = false;
+        box.className = `testpay-result ${ok ? 'is-ok' : 'is-fail'}`;
+        box.innerHTML = `
+          <div class="testpay-result-head">${icon(ok ? 'check' : 'alert', 16)} ${ok ? '支付成功，订单已自动发货' : '上报失败'}</div>
+          <p class="testpay-result-msg">${esc(message)}</p>
+          <dl class="testpay-meta">
+            <div><dt>订单号</dt><dd class="cell-mono">${esc(data.orderNo || '—')}</dd></div>
+            <div><dt>金额</dt><dd>¥${((Number(data.amountCents) || 0) / 100).toFixed(2)}</dd></div>
+            <div><dt>支付方式</dt><dd>${esc(data.payType || '')}</dd></div>
+          </dl>
+          ${data.orderUrl ? `<a class="btn btn-ghost btn-sm" href="${esc(data.orderUrl)}" target="_blank" rel="noopener">${icon('external', 14)} 打开订单页查看卡密</a>` : ''}`;
+        hydrateIcons(box);
+      } catch (err) {
+        box.hidden = false;
+        box.className = 'testpay-result is-fail';
+        box.innerHTML = `<div class="testpay-result-head">${icon('alert', 16)} 请求失败</div><p class="testpay-result-msg">${esc(err.message || '请稍后重试')}</p>`;
+        hydrateIcons(box);
+      } finally {
+        submit.disabled = false;
+        submit.innerHTML = original;
+        hydrateIcons(submit);
+      }
+    });
   }
 
   /* ============================== 留言中心 ============================== */

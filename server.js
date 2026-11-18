@@ -9,6 +9,7 @@ import {
   adminOrderDetail,
   clearDemoCards,
   closeOrder,
+  createAdminTestOrder,
   createOrder,
   createProduct,
   createSupportMessage,
@@ -434,6 +435,36 @@ async function handleAdminApi(req, res, url, session) {
       ...selfhostConfig(),
       address: requestBaseUrl(req),
       logs,
+    });
+  }
+
+  if (pathname === '/api/admin/test-payment' && req.method === 'POST') {
+    const body = await readJson(req);
+    const amountCents = Math.round(Number(body.amount) * 100);
+    const payType = ['alipay', 'wxpay', 'qqpay'].includes(body.payType) ? body.payType : 'wxpay';
+    const order = createAdminTestOrder({ amountCents, payType });
+    const report = handleSelfhostRequest({
+      method: 'POST',
+      path: '/api.php',
+      ip: 'admin-test',
+      params: {
+        act: 'notify',
+        pid: config.selfhost.pid,
+        key: config.selfhost.key,
+        type: order.pay_type,
+        money: (amountCents / 100).toFixed(2),
+        trade_no: `TEST-${order.order_no}`,
+        trade_status: 'TRADE_SUCCESS',
+      },
+    });
+    const baseUrl = requestBaseUrl(req);
+    return json(res, 200, {
+      ok: report.status === 200,
+      orderNo: order.order_no,
+      orderUrl: `${baseUrl}/order/${order.order_no}?token=${encodeURIComponent(order.access_token)}`,
+      amountCents,
+      payType: order.pay_type,
+      result: report.body,
     });
   }
 

@@ -222,6 +222,72 @@ export function createOrder({ productId, quantity, contact, payType, viewPasswor
   });
 }
 
+/**
+ * 管理员「测试支付」：创建一笔隐藏测试订单，并存一张测试卡密。
+ * 仅供后台模拟自建支付回调，不会出现在前台商品列表。
+ */
+export function createAdminTestOrder({ amountCents, payType = 'wxpay' }) {
+  const amount = Math.trunc(Number(amountCents));
+  if (!Number.isFinite(amount) || amount < 1 || amount > 100000) {
+    throw new AppError('测试金额需在 0.01 - 1000 元之间', 400, 'INVALID_TEST_AMOUNT');
+  }
+  const type = PAY_METHODS.has(payType) ? payType : 'wxpay';
+  const createdAt = nowIso();
+  const expiresAt = addMinutes(createdAt, config.orderTtlMinutes);
+  const accessToken = randomToken(24);
+
+  return tx(() => {
+    let product = db
+      .prepare("SELECT * FROM products WHERE name = '支付测试' AND category = '系统'")
+      .get();
+    if (!product) {
+      const result = db
+        .prepare(
+          `INSERT INTO products (name, category, description, price_cents, original_price_cents, badge, icon, accent, features, active, sort_order, created_at, updated_at)
+           VALUES ('支付测试', '系统', '管理员测试支付专用，不在前台展示。', 0, NULL, NULL, 'bolt', 'violet', '[]', 0, 9999, ?, ?)`,
+        )
+        .run(createdAt, createdAt);
+      product = db.prepare('SELECT * FROM products WHERE id = ?').get(Number(result.lastInsertRowid));
+    }
+
+    let orderNo = createOrderNo();
+    for (let i = 0; i < 6; i += 1) {
+      if (!db.prepare('SELECT 1 FROM orders WHERE order_no = ?').get(orderNo)) break;
+      orderNo = createOrderNo();
+    }
+
+    const result = db
+      .prepare(
+        `INSERT INTO orders
+          (order_no, access_token, product_id, product_name, unit_price_cents, quantity, amount_cents, contact, view_password_hash, status, pay_type, client_ip, created_at, expires_at)
+         VALUES (?, ?, ?, '支付测试', ?, 1, ?, '后台测试', NULL, 'pending', ?, 'admin-test', ?, ?)`,
+      )
+      .run(orderNo, accessToken, product.id, amount, amount, type, createdAt, expiresAt);
+    const orderId = Number(result.lastInsertRowid);
+
+    const card = db
+      .prepare(
+        `INSERT INTO cards (product_id, secret, status, order_id, batch, created_at, reserved_at)
+         VALUES (?, ?, 'reserved', ?, 'TEST', ?, ?)`,
+      )
+      .run(product.id, `TEST-${randomToken(8).toUpperCase()}`, orderId, createdAt, createdAt);
+
+    return {
+      id: orderId,
+      order_no: orderNo,
+      access_token: accessToken,
+      product_name: '支付测试',
+      quantity: 1,
+      amount_cents: amount,
+      pay_type: type,
+      status: 'pending',
+      created_at: createdAt,
+      expires_at: expiresAt,
+      card_id: Number(card.lastInsertRowid),
+    };
+  });
+}
+
 export function findOrderByNo(orderNo) {
   return orderRow(db.prepare('SELECT * FROM orders WHERE order_no = ?').get(orderNo));
 }

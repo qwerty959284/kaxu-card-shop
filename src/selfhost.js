@@ -17,12 +17,19 @@ export function selfhostSign(params, key = config.selfhost.key) {
 export function verifySelfhostSign(params) {
   const provided = String(params.sign || '').toLowerCase();
   if (!/^[a-f0-9]{32}$/.test(provided)) return false;
-  const expected = selfhostSign(params);
-  try {
-    return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
-  } catch {
-    return false;
-  }
+  const variants = [params, { ...params }, { ...params }];
+  delete variants[1].act;
+  delete variants[2].act;
+  delete variants[2].pid;
+  delete variants[2].key;
+  return variants.some((variant) => {
+    const expected = selfhostSign(variant);
+    try {
+      return crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+    } catch {
+      return false;
+    }
+  });
 }
 
 export function normalizePayType(value) {
@@ -203,7 +210,7 @@ function reportPayment(params) {
   if (!credentialOk(params)) throw httpError('商户密钥错误', 401);
   const statusText = String(params.trade_status || params.status || 'TRADE_SUCCESS');
   if (statusText !== 'TRADE_SUCCESS' && statusText !== '1' && statusText !== 'success') {
-    throw httpError('非成功状态', 200);
+    throw httpError('非成功状态', 400);
   }
 
   const orderNo = String(params.out_trade_no || params.order_no || '').trim();
