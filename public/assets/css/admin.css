@@ -841,7 +841,8 @@ body.admin-body {
   background: rgba(255, 255, 255, 0.02);
 }
 
-.testpay-result.is-ok {
+.testpay-result.is-ok,
+.testpay-result.is-info {
   border-color: rgba(111, 242, 191, 0.24);
   background: rgba(111, 242, 191, 0.05);
 }
@@ -898,6 +899,12 @@ body.admin-body {
   margin: 0;
   color: var(--text-soft);
   font-size: 11px;
+}
+
+.testpay-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .channel-list {

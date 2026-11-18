@@ -442,29 +442,36 @@ async function handleAdminApi(req, res, url, session) {
     const body = await readJson(req);
     const amountCents = Math.round(Number(body.amount) * 100);
     const payType = ['alipay', 'wxpay', 'qqpay'].includes(body.payType) ? body.payType : 'wxpay';
+    const mode = body.mode === 'simulate' ? 'simulate' : 'pay';
     const order = createAdminTestOrder({ amountCents, payType });
-    const report = handleSelfhostRequest({
-      method: 'POST',
-      path: '/api.php',
-      ip: 'admin-test',
-      params: {
-        act: 'notify',
-        pid: config.selfhost.pid,
-        key: config.selfhost.key,
-        type: order.pay_type,
-        money: (amountCents / 100).toFixed(2),
-        trade_no: `TEST-${order.order_no}`,
-        trade_status: 'TRADE_SUCCESS',
-      },
-    });
+    let report = null;
+    if (mode === 'simulate') {
+      report = handleSelfhostRequest({
+        method: 'POST',
+        path: '/api.php',
+        ip: 'admin-test',
+        params: {
+          act: 'notify',
+          pid: config.selfhost.pid,
+          key: config.selfhost.key,
+          type: order.pay_type,
+          money: (amountCents / 100).toFixed(2),
+          trade_no: `TEST-${order.order_no}`,
+          trade_status: 'TRADE_SUCCESS',
+        },
+      });
+    }
     const baseUrl = requestBaseUrl(req);
+    const token = encodeURIComponent(order.access_token);
     return json(res, 200, {
-      ok: report.status === 200,
+      ok: mode === 'simulate' ? report.status === 200 : true,
+      mode,
       orderNo: order.order_no,
-      orderUrl: `${baseUrl}/order/${order.order_no}?token=${encodeURIComponent(order.access_token)}`,
+      payUrl: `${baseUrl}/pay/${order.order_no}?token=${token}`,
+      orderUrl: `${baseUrl}/order/${order.order_no}?token=${token}`,
       amountCents,
       payType: order.pay_type,
-      result: report.body,
+      result: report ? report.body : null,
     });
   }
 

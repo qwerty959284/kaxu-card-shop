@@ -64,7 +64,7 @@
     },
     testpay: {
       title: '测试支付',
-      subtitle: '不用真实付款，模拟一笔自建支付回调。',
+      subtitle: '打开与前台一致的支付页，验证真实支付与自动发货。',
       load: loadTestPay,
     },
   };
@@ -546,8 +546,8 @@
           <section class="panel">
             <div class="panel-head">
               <div>
-                <div class="panel-title">${icon('bolt', 15)} 模拟一笔支付</div>
-                <div class="panel-sub">创建隐藏测试订单，再模拟监控软件上报，验证自动发货链路</div>
+                <div class="panel-title">${icon('bolt', 15)} 测试一笔支付</div>
+                <div class="panel-sub">创建隐藏测试订单，打开与前台一致的支付页，验证真实支付流程</div>
               </div>
               <span class="tag tag-mint">不扣真实余额</span>
             </div>
@@ -566,10 +566,13 @@
                   </select>
                 </label>
               </div>
-              <p class="form-hint">${icon('alert', 14)} 会生成一笔「支付测试」隐藏订单并自动标记为已支付，不会出现在前台商品里；测试卡密仅用于验证发货。</p>
+              <p class="form-hint">${icon('alert', 14)} 会生成一笔「支付测试」隐藏订单并打开前台支付页；扫码付款后，监控软件上报给商城并自动发货。</p>
               <div class="form-actions">
                 <button class="btn btn-primary" type="submit" id="testPaySubmit">
-                  ${icon('bolt', 15)} 模拟支付并自动发货
+                  ${icon('external', 15)} 去支付（打开支付页）
+                </button>
+                <button class="btn btn-ghost" type="submit" id="testPaySimulate" formnovalidate>
+                  ${icon('bolt', 15)} 模拟回调（不付款）
                 </button>
               </div>
             </form>
@@ -584,10 +587,12 @@
     const amountInput = document.querySelector('#testPayAmount');
     const typeInput = document.querySelector('#testPayType');
     const submit = document.querySelector('#testPaySubmit');
+    const simulate = document.querySelector('#testPaySimulate');
     const box = document.querySelector('#testPayResult');
 
     form?.addEventListener('submit', async (event) => {
       event.preventDefault();
+      const mode = event.submitter && event.submitter.id === 'testPaySimulate' ? 'simulate' : 'pay';
       const amount = Number(amountInput.value);
       if (!Number.isFinite(amount) || amount < 0.01 || amount > 1000) {
         toast('测试金额需在 0.01 - 1000 元之间', 'error');
@@ -595,16 +600,43 @@
         return;
       }
 
+      let payWindow = null;
+      if (mode === 'pay') payWindow = window.open('', '_blank');
+
       submit.disabled = true;
-      const original = submit.innerHTML;
-      submit.textContent = '处理中…';
+      simulate.disabled = true;
+      const submitHtml = submit.innerHTML;
+      const simulateHtml = simulate.innerHTML;
+      (mode === 'pay' ? submit : simulate).textContent = '处理中…';
       box.hidden = true;
 
       try {
         const data = await api('/api/admin/test-payment', {
           method: 'POST',
-          body: { amount, payType: typeInput.value },
+          body: { amount, payType: typeInput.value, mode },
         });
+
+        if (mode === 'pay') {
+          if (payWindow) payWindow.location.href = data.payUrl;
+          else window.open(data.payUrl, '_blank');
+          box.hidden = false;
+          box.className = 'testpay-result is-info';
+          box.innerHTML = `
+            <div class="testpay-result-head">${icon('external', 16)} 测试订单已创建，支付页已打开</div>
+            <p class="testpay-result-msg">完成付款后，监控软件会把收款上报给商城并自动发货。若支付页没有弹出，点下面的按钮打开。</p>
+            <dl class="testpay-meta">
+              <div><dt>订单号</dt><dd class="cell-mono">${esc(data.orderNo || '—')}</dd></div>
+              <div><dt>金额</dt><dd>¥${((Number(data.amountCents) || 0) / 100).toFixed(2)}</dd></div>
+              <div><dt>支付方式</dt><dd>${esc(data.payType || '')}</dd></div>
+            </dl>
+            <div class="testpay-links">
+              <a class="btn btn-primary btn-sm" href="${esc(data.payUrl)}" target="_blank" rel="noopener">${icon('external', 14)} 打开支付页</a>
+              <a class="btn btn-ghost btn-sm" href="${esc(data.orderUrl)}" target="_blank" rel="noopener">${icon('receipt', 14)} 查看订单状态</a>
+            </div>`;
+          hydrateIcons(box);
+          return;
+        }
+
         const ok = Boolean(data.ok);
         const rawMessage = (data.result && (data.result.msg || data.result.message)) || '';
         const message = ok
@@ -623,14 +655,18 @@
           ${data.orderUrl ? `<a class="btn btn-ghost btn-sm" href="${esc(data.orderUrl)}" target="_blank" rel="noopener">${icon('external', 14)} 打开订单页查看卡密</a>` : ''}`;
         hydrateIcons(box);
       } catch (err) {
+        if (payWindow) payWindow.close();
         box.hidden = false;
         box.className = 'testpay-result is-fail';
         box.innerHTML = `<div class="testpay-result-head">${icon('alert', 16)} 请求失败</div><p class="testpay-result-msg">${esc(err.message || '请稍后重试')}</p>`;
         hydrateIcons(box);
       } finally {
         submit.disabled = false;
-        submit.innerHTML = original;
+        simulate.disabled = false;
+        submit.innerHTML = submitHtml;
+        simulate.innerHTML = simulateHtml;
         hydrateIcons(submit);
+        hydrateIcons(simulate);
       }
     });
   }
