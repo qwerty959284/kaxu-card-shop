@@ -16,7 +16,7 @@
     modal.id = 'supportModal';
     modal.hidden = true;
     modal.innerHTML = `
-      <div class="modal-card support-card" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
+      <div class="modal-card support-modal" role="dialog" aria-modal="true" aria-labelledby="supportTitle">
         <button class="modal-close" type="button" data-support-close aria-label="关闭">
           ${icon('close', 15)}
         </button>

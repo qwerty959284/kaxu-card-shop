@@ -1111,6 +1111,8 @@ section[id] {
 
 /* 首页“订单遇到问题”入口：整块可点击，直接打开留言弹窗 */
 .support-card.support-entry {
+  width: 100%;
+  padding: 28px;
   appearance: none;
   font: inherit;
   color: inherit;
@@ -2447,7 +2449,7 @@ body.order-page {
 
 /* ============================== 联系管理员 ============================== */
 
-.support-card {
+.support-modal {
   width: min(520px, 100%);
   padding: 28px;
 }
@@ -2493,7 +2495,7 @@ body.order-page {
   line-height: 1.75;
 }
 
-.support-card form {
+.support-modal form {
   margin-top: 18px;
 }
 
@@ -2503,11 +2505,11 @@ body.order-page {
   gap: 12px;
 }
 
-.support-card .textarea {
+.support-modal .textarea {
   min-height: 126px;
 }
 
-.support-card .btn-block {
+.support-modal .btn-block {
   margin-top: 14px;
 }
 
@@ -2550,7 +2552,11 @@ body.order-page {
     grid-template-columns: 1fr;
   }
 
-  .support-card {
+  .support-card.support-entry {
+    padding: 20px;
+  }
+
+  .support-modal {
     padding: 22px;
   }
 
