@@ -829,6 +829,67 @@ body.admin-body {
   gap: 16px;
 }
 
+.product-edit-modal {
+  width: min(620px, 100%);
+  padding: 26px;
+}
+
+.product-edit-head {
+  padding-right: 34px;
+}
+
+.product-edit-head .eyebrow {
+  color: var(--mint);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+}
+
+.product-edit-head h3 {
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.product-edit-head p {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.product-edit-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  margin-top: 20px;
+}
+
+.product-edit-form .span-2 {
+  grid-column: span 2;
+}
+
+.product-edit-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+@media (max-width: 620px) {
+  .product-edit-modal {
+    padding: 20px;
+  }
+
+  .product-edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .product-edit-form .span-2 {
+    grid-column: span 1;
+  }
+}
+
 .qr-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1602,6 +1663,17 @@ body.admin-body {
   border-color: rgba(255, 122, 133, 0.25);
   color: #ff9ca4;
   background: rgba(255, 122, 133, 0.06);
+}
+
+.row-btn.is-off {
+  border-color: rgba(111, 242, 191, 0.22);
+  color: var(--mint);
+}
+
+.row-btn.is-off:hover {
+  border-color: rgba(111, 242, 191, 0.42);
+  color: var(--mint);
+  background: rgba(111, 242, 191, 0.07);
 }
 
 .row-btn svg {

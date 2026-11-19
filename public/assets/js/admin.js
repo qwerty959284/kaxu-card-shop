@@ -1855,7 +1855,7 @@
           </div>
           <div class="table-wrap">
             <table class="data-table">
-              <thead><tr><th>商品</th><th>分类</th><th>售价</th><th>可用库存</th><th>已售</th><th>状态</th><th>操作</th></tr></thead>
+              <thead><tr><th>商品</th><th>分类</th><th>售价</th><th>可用库存</th><th>已售</th><th>上下架</th><th>操作</th></tr></thead>
               <tbody>
                 ${
                   state.products.length
@@ -1868,7 +1868,9 @@
                     <td class="cell-strong">${money(item.priceCents)}</td>
                     <td><span class="stock-num ${item.stock <= 5 ? 'low' : ''}">${item.stock}</span></td>
                     <td class="cell-muted">${item.sold}</td>
-                    <td><label class="switch" title="${item.active ? '点击下架' : '点击上架'}"><input type="checkbox" data-active="${item.id}" ${item.active ? 'checked' : ''}><i></i></label></td>
+                    <td>
+                      <button class="row-btn${item.active ? '' : ' is-off'}" type="button" data-action="toggle-product" data-id="${item.id}">${item.active ? '下架' : '上架'}</button>
+                    </td>
                     <td>
                       <div class="row-actions">
                         <button class="row-btn" type="button" data-action="edit-product" data-id="${item.id}">${icon('edit', 12)} 编辑</button>
@@ -2045,6 +2047,93 @@
       btn.addEventListener('click', () => handleOrderAction(btn.dataset.orderAction, Number(btn.dataset.id)));
     });
   }
+
+  function openProductEditor(item) {
+    const price = (Number(item.priceCents) / 100).toFixed(2);
+    const original = item.originalPriceCents ? (Number(item.originalPriceCents) / 100).toFixed(2) : '';
+    openModal(`
+      <div class="modal-card product-edit-modal" role="dialog" aria-modal="true" aria-labelledby="productEditTitle">
+        <button class="modal-close" type="button" data-close-modal aria-label="关闭">×</button>
+        <div class="product-edit-head">
+          <span class="eyebrow">PRODUCT</span>
+          <h3 id="productEditTitle">编辑商品</h3>
+          <p>名称、价格与状态保存后立即同步到前台。</p>
+        </div>
+        <form id="productEditForm" class="product-edit-form">
+          <label class="field span-2">
+            <span class="field-label">商品名称</span>
+            <input class="input" id="peName" type="text" maxlength="60" required value="${esc(item.name)}">
+          </label>
+          <label class="field">
+            <span class="field-label">分类</span>
+            <input class="input" id="peCategory" type="text" maxlength="20" value="${esc(item.category)}">
+          </label>
+          <label class="field">
+            <span class="field-label">售价（元）</span>
+            <input class="input" id="pePrice" type="number" min="0.01" step="0.01" required value="${price}">
+          </label>
+          <label class="field">
+            <span class="field-label">原价（元，选填）</span>
+            <input class="input" id="peOriginal" type="number" min="0" step="0.01" value="${original}">
+          </label>
+          <label class="field">
+            <span class="field-label">角标（选填）</span>
+            <input class="input" id="peBadge" type="text" maxlength="8" value="${esc(item.badge || '')}">
+          </label>
+          <label class="field span-2">
+            <span class="field-label">商品描述</span>
+            <textarea class="textarea" id="peDesc" maxlength="300" style="min-height:88px">${esc(item.description || '')}</textarea>
+          </label>
+          <label class="checkbox span-2"><input type="checkbox" id="peActive" ${item.active ? 'checked' : ''}> 上架销售（关闭后前台暂时看不到）</label>
+          <div class="form-actions span-2">
+            <button class="btn btn-ghost btn-sm" type="button" data-close-modal>取消</button>
+            <button class="btn btn-primary btn-sm" type="submit" id="peSave">保存修改</button>
+          </div>
+        </form>
+      </div>`);
+
+    $('#productEditForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const name = $('#peName').value.trim();
+      const priceCents = Math.round(Number($('#pePrice').value) * 100);
+      const originalPriceCents = Number($('#peOriginal').value) > 0
+        ? Math.round(Number($('#peOriginal').value) * 100)
+        : null;
+      if (name.length < 2) return toast('商品名称至少 2 个字符', 'error');
+      if (!Number.isFinite(priceCents) || priceCents < 1) return toast('请输入正确的售价', 'error');
+      if (originalPriceCents !== null && originalPriceCents < priceCents) {
+        return toast('原价不能低于售价', 'error');
+      }
+      const btn = $('#peSave');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner" style="width:13px;height:13px"></span> 正在保存…`;
+      try {
+        await api(`/api/admin/products/${item.id}`, {
+          method: 'PATCH',
+          body: {
+            name,
+            category: $('#peCategory').value.trim() || '其他',
+            description: $('#peDesc').value.trim(),
+            priceCents,
+            originalPriceCents,
+            badge: $('#peBadge').value.trim(),
+            features: item.features || [],
+            icon: item.icon,
+            accent: item.accent,
+            active: $('#peActive').checked,
+          },
+        });
+        toast('商品已更新');
+        closeModal();
+        await loadCreate();
+      } catch (err) {
+        toast(err.message || '保存失败，请重试', 'error');
+        btn.disabled = false;
+        btn.textContent = '保存修改';
+      }
+    });
+  }
+
 
   function closeModal() {
     modalRoot.innerHTML = '';
@@ -2251,10 +2340,28 @@
       }
       return;
     }
+    if (action === 'toggle-product') {
+      const id = Number(target.dataset.id);
+      const item = state.products.find((p) => p.id === id);
+      if (!item) return;
+      target.disabled = true;
+      try {
+        await api(`/api/admin/products/${id}/active`, {
+          method: 'POST',
+          body: { active: !item.active },
+        });
+        toast(item.active ? '商品已下架' : '商品已上架');
+        await loadCreate();
+      } catch (err) {
+        toast(err.message || '操作失败', 'error');
+        target.disabled = false;
+      }
+      return;
+    }
     if (action === 'edit-product') {
-      state.create.editingId = Number(target.dataset.id);
-      location.hash = '#/create';
-      if (state.currentView === 'create') navigate('create', true);
+      const item = state.products.find((p) => p.id === Number(target.dataset.id));
+      if (!item) return toast('商品不存在，请刷新后重试', 'error');
+      openProductEditor(item);
       return;
     }
     if (action === 'delete-product') {
