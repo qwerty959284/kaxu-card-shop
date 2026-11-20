@@ -83,6 +83,16 @@ if [[ -z "${EPAY_PID}" ]]; then
 fi
 EPAY_PID="${EPAY_PID:-10169}"
 
+if [[ -z "${SELFHOST_KEY}" ]]; then
+  read -rp "自建支付商户密钥 SELFHOST_KEY（留空则复用 EPAY_KEY）: " SELFHOST_KEY || true
+fi
+SELFHOST_KEY="${SELFHOST_KEY:-$EPAY_KEY}"
+
+if [[ -z "${SELFHOST_PID}" ]]; then
+  read -rp "自建支付商户 PID [10169]: " SELFHOST_PID || true
+fi
+SELFHOST_PID="${SELFHOST_PID:-10169}"
+
 IP="$(curl -4 -fsS --max-time 10 https://api.ipify.org 2>/dev/null || true)"
 if [[ -z "${IP}" ]]; then
   IP="$(hostname -I | awk '{print $1}')"
@@ -99,6 +109,8 @@ umask 077
   printf 'EPAY_GATEWAY=https://pay.521cd.cn/xpay/epay\n'
   printf 'EPAY_PID=%s\n' "${EPAY_PID}"
   printf 'EPAY_KEY=%s\n' "${EPAY_KEY}"
+  printf 'SELFHOST_PID=%s\n' "${SELFHOST_PID:-10169}"
+  printf 'SELFHOST_KEY=%s\n' "${SELFHOST_KEY}"
 } > "${APP_DIR}/.env"
 
 if ! id -u "${APP_USER}" >/dev/null 2>&1; then
@@ -120,6 +132,7 @@ Type=simple
 User=${APP_USER}
 WorkingDirectory=${APP_DIR}
 Environment=NODE_ENV=production
+EnvironmentFile=-${APP_DIR}/.env
 ExecStart=/usr/bin/node server.js
 Restart=always
 RestartSec=3
