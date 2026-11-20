@@ -276,16 +276,21 @@ export function handleSelfhostRequest({ method, path, params, ip }) {
   }
 
   try {
-    if (path === '/api.php' && (act === 'order' || act === 'query')) {
+    // 兼容多种路径：/api.php、/xpay/epay/api.php、/api/pay/notify、/notify.php、/submit.php
+    const isApiPath = path.includes('/api.php');
+    const isNotifyPath = path === '/notify.php' || path === '/api/pay/notify';
+    const isSubmitPath = path === '/submit.php';
+
+    if (isApiPath && (act === 'order' || act === 'query')) {
       result = queryOrder(body);
-    } else if (path === '/api.php' && (act === 'orders' || act === 'orderlist')) {
+    } else if (isApiPath && (act === 'orders' || act === 'orderlist')) {
       result = queryOrders(body);
     } else if (
-      path === '/notify.php' ||
-      (path === '/api.php' && ['notify', 'report', 'pay', 'callback'].includes(act))
+      isNotifyPath ||
+      (isApiPath && ['notify', 'report', 'pay', 'callback'].includes(act))
     ) {
       result = reportPayment(body);
-    } else if (path === '/submit.php') {
+    } else if (isSubmitPath) {
       result = {
         status: 200,
         contentType: 'text/plain; charset=utf-8',

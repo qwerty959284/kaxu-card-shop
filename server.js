@@ -787,19 +787,18 @@ const server = http.createServer(async (req, res) => {
   const pathname = url.pathname;
 
   try {
-    const gatewayPath = pathname.endsWith('/api.php')
-      ? '/api.php'
-      : pathname.endsWith('/notify.php')
-        ? '/notify.php'
-        : pathname.endsWith('/submit.php')
-          ? '/submit.php'
-          : '';
-    if (gatewayPath) {
+    // 更宽松的网关路径匹配：兼容 /api.php、/xpay/epay/api.php、/api/pay/notify 等
+    const isGatewayPath = pathname.endsWith('/api.php') ||
+      pathname.endsWith('/notify.php') ||
+      pathname.endsWith('/submit.php') ||
+      pathname === '/api/pay/notify' ||
+      pathname.includes('/api.php');
+    if (isGatewayPath) {
       const queryParams = Object.fromEntries(url.searchParams.entries());
       const params = { ...queryParams, ...(await readParams(req, url)) };
       const result = handleSelfhostRequest({
         method: req.method,
-        path: gatewayPath,
+        path: pathname,
         params,
         ip: clientIp(req),
       });
